@@ -4,13 +4,13 @@ UNION ALL SELECT 'devices', count(*) FROM devices
 UNION ALL SELECT 'members', count(*) FROM members
 UNION ALL SELECT 'events',  count(*) FROM events;
 
--- 2. Column types
+-- 2. Column types (is event_ts timestamptz or plain timestamp?)
 SELECT table_name, column_name, data_type
 FROM information_schema.columns
 WHERE table_schema = 'public'
 ORDER BY table_name, ordinal_position;
 
--- 3. All branches
+-- 3. All branches (only 8)
 SELECT * FROM branches ORDER BY branch_id;
 
 -- 4. Devices per branch and kind
@@ -24,7 +24,7 @@ FROM events GROUP BY 1 ORDER BY 1;
 SELECT status, membership_tier, count(*) FROM members GROUP BY 1,2 ORDER BY 1,2;
 
 -- 7. One member's full story
-SELECT event_id, source_ref, event_type, event_ts, branch_id, device_id, ingested_at, details
+SELECT member_id, event_id, source_ref, event_type, event_ts, branch_id, device_id, ingested_at, details
 FROM events
 WHERE member_id = (SELECT member_id FROM events WHERE event_type = 'friend_visit' LIMIT 1)
 ORDER BY event_ts
