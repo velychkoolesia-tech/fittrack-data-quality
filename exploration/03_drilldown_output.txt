@@ -1,0 +1,94 @@
+  event_type  | rows_in_dup_groups | refs 
+--------------+--------------------+------
+ check_in     |               3568 | 1779
+ check_out    |               3574 | 1782
+ friend_visit |                350 |  175
+(3 rows)
+
+  source  | rows_in_dup_groups 
+----------+--------------------
+ D03-IN   |                544
+ D02-IN   |                542
+ D03-OUT  |                533
+ D02-OUT  |                513
+ D01-OUT  |                506
+ D07-IN   |                488
+ D01-IN   |                485
+ D07-OUT  |                482
+ D06-IN   |                454
+ D06-OUT  |                449
+ D04-OUT  |                446
+ D05-OUT  |                438
+ D04-IN   |                423
+ D05-IN   |                414
+ D08-IN   |                218
+ D08-OUT  |                207
+ D03-DESK |                 56
+ D07-DESK |                 54
+ D01-DESK |                 52
+ D05-DESK |                 50
+ D06-DESK |                 44
+ D02-DESK |                 42
+ D04-DESK |                 36
+ D08-DESK |                 16
+(24 rows)
+
+ dup_groups | identical_content | different_content | max_gap_between_copies 
+------------+-------------------+-------------------+------------------------
+       3736 |               700 |              3036 | 3 days 22:17:35.2
+(1 row)
+
+ source |  n   | min_ahead | max_ahead |       first_seen       |       last_seen        
+--------+------+-----------+-----------+------------------------+------------------------
+ D07-IN | 1542 | 02:54:53  | 02:59:59  | 2024-06-06 15:14:40+00 | 2024-08-06 07:34:00+00
+(1 row)
+
+ source |  n  |     max_lag      |       first_seen       |       last_seen        
+--------+-----+------------------+------------------------+------------------------
+ crm    | 420 | 32 days 01:20:19 | 2021-03-18 19:16:27+00 | 2024-12-31 14:54:59+00
+(1 row)
+
+ event_type |  n  | distinct_members | min_id | max_id |       first_seen       |       last_seen        
+------------+-----+------------------+--------+--------+------------------------+------------------------
+ check_out  | 414 |                2 | 990001 | 990002 | 2024-01-01 10:05:43+00 | 2024-12-30 13:11:11+00
+ check_in   | 413 |                2 | 990001 | 990002 | 2024-01-01 10:04:32+00 | 2024-12-30 13:08:56+00
+ CHECK_IN   |   1 |                1 | 990001 | 990001 | 2024-04-08 10:08:36+00 | 2024-04-08 10:08:36+00
+(3 rows)
+
+ min  | max  | count 
+------+------+-------
+ 1001 | 2122 |  1122
+(1 row)
+
+ event_id | source_ref  | member_id |     event_type     |        event_ts        |      local_ts       | device_id 
+----------+-------------+-----------+--------------------+------------------------+---------------------+-----------
+  1043780 | crm:0001168 |      1803 | membership_started | 2024-04-15 19:37:41+00 | 2024-04-15 12:37:41 | 
+  1045504 | crm:0001174 |      1806 | membership_started | 2024-04-19 19:27:04+00 | 2024-04-19 12:27:04 | 
+  1045635 | crm:0001175 |      1807 | membership_started | 2024-04-20 03:18:39+00 | 2024-04-19 20:18:39 | 
+  1046680 | crm:0001182 |      1811 | membership_started | 2024-04-23 00:45:49+00 | 2024-04-22 17:45:49 | 
+  1048936 | crm:0001192 |      1820 | membership_started | 2024-04-28 20:59:43+00 | 2024-04-28 13:59:43 | 
+(5 rows)
+
+  event_type  | local_hour | count 
+--------------+------------+-------
+ check_in     |          0 |   535
+ check_in     |          1 |   174
+ check_in     |          2 |   400
+ check_in     |          3 |   421
+ check_in     |         23 |   101
+ check_out    |          0 |   458
+ check_out    |          1 |   172
+ check_out    |          2 |   395
+ check_out    |          3 |   416
+ friend_visit |          0 |    47
+ friend_visit |          1 |    17
+ friend_visit |          2 |    35
+ friend_visit |          3 |    38
+(13 rows)
+
+ member_id | joined_on  | status | membership_tier |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  their_events                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+-----------+------------+--------+-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      1031 | 2021-04-03 | active | basic           | check_in, friend_visit, check_out, check_in, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, check_out, check_in, check_out, check_in, friend_visit, check_out, friend_visit, check_out, check_in, check_in, check_out, check_out, check_in, check_out, check_in, check_in, friend_visit, check_out, check_in, friend_visit, check_out
+      1132 | 2021-12-09 | active | premium         | check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, check_out, CHECK_IN, friend_visit, check_out, CHECK_IN, friend_visit, check_out, CHECK_IN, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_in, friend_visit, check_out, check_in, friend_visit, friend_visit, check_out, check_in, check_out, check_in, check_out, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, check_out, check_in, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, check_in, check_out, check_in, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, friend_visit, check_out, check_in, check_out, check_in, check_out, check_in, check_out
+(2 rows)
+

@@ -1,0 +1,69 @@
+ device_id | branch_id | count |          min           |          max           
+-----------+-----------+-------+------------------------+------------------------
+ D04-IN    |         4 |   181 | 2024-04-08 10:08:36+00 | 2024-04-15 02:00:32+00
+(1 row)
+
+ branch_id | check_ins | check_outs 
+-----------+-----------+------------
+         1 |     10134 |      10016
+         2 |     10330 |      10179
+         3 |     11680 |      11556
+         4 |      9529 |       9435
+         5 |      9599 |       9505
+         6 |      8961 |       8840
+         7 |     10041 |       9919
+         8 |      3820 |       3755
+(8 rows)
+
+ local_year | count  
+------------+--------
+       2024 | 154349
+(1 row)
+
+        check_name         | count 
+---------------------------+-------
+ multiple_start_events     |     0
+ no_start_event            |     2
+ events_for_unknown_member |   828
+(3 rows)
+
+ branch_id |      name      | count 
+-----------+----------------+-------
+         8 | Pearl District |     5
+(1 row)
+
+ branch_id |      name      | outside_hours | total 
+-----------+----------------+---------------+-------
+         1 | Back Bay       |           426 | 21085
+         2 | Harbor Point   |           449 | 21289
+         3 | Lakeshore      |           474 | 24491
+         4 | Riverwalk      |           356 | 19866
+         5 | Union Station  |           363 | 20106
+         6 | Camelback      |           381 | 18774
+         7 | Mission Bay    |           586 | 20772
+         8 | Pearl District |           174 |  7966
+(8 rows)
+
+ refs_duplicated | extra_rows 
+-----------------+------------
+            3736 |       3756
+(1 row)
+
+  event_type  |    kind    | count 
+--------------+------------+-------
+ check_in     | entrance   | 73913
+ CHECK_IN     | entrance   |   181
+ check_out    | exit       | 73205
+ friend_visit | front_desk |  7050
+(4 rows)
+
+ branch_mismatch 
+-----------------
+               0
+(1 row)
+
+ ingested_before_event |     max_lag      
+-----------------------+------------------
+                  1542 | 32 days 01:20:19
+(1 row)
+
