@@ -1,0 +1,122 @@
+
+=== X1a: which content column(s) differ within duplicate groups ===
+ total_dup_groups | member_id_differs | event_type_differs | event_ts_differs | branch_id_differs | device_id_differs | details_differ | all_identical 
+------------------+-------------------+--------------------+------------------+-------------------+-------------------+----------------+---------------
+             3736 |                 0 |                  0 |             3036 |                 0 |                 0 |              0 |           700
+(1 row)
+
+
+=== X1b: combination of differing columns (ranked by group count) ===
+     differing_columns      | groups 
+----------------------------+--------
+ event_ts                   |   3036
+ (none – identical content) |    700
+(2 rows)
+
+
+=== X2: five duplicate groups with the largest gap between copies ===
+   source_ref    | event_id | member_id | event_type |          event_ts          | branch_id | device_id |        ingested_at         | details 
+-----------------+----------+-----------+------------+----------------------------+-----------+-----------+----------------------------+---------
+ D01-IN:0007707  |  1119384 |      1776 | check_in   | 2024-10-16 09:16:18+00     |         1 | D01-IN    | 2024-10-16 09:16:29+00     | 
+ D01-IN:0007707  |  1121213 |      1776 | check_in   | 2024-10-20 07:21:32.35+00  |         1 | D01-IN    | 2024-10-20 07:21:32.55+00  | 
+ D02-IN:0007871  |  1119383 |      1836 | check_in   | 2024-10-16 09:03:35+00     |         2 | D02-IN    | 2024-10-16 09:03:57+00     | 
+ D02-IN:0007871  |  1121212 |      1836 | check_in   | 2024-10-20 07:21:32+00     |         2 | D02-IN    | 2024-10-20 07:21:32.2+00   | 
+ D02-IN:0007872  |  1119385 |      1680 | check_in   | 2024-10-16 09:26:11+00     |         2 | D02-IN    | 2024-10-16 09:26:27+00     | 
+ D02-IN:0007872  |  1121214 |      1680 | check_in   | 2024-10-20 07:21:32.7+00   |         2 | D02-IN    | 2024-10-20 07:21:32.9+00   | 
+ D02-IN:0007873  |  1119386 |      1537 | check_in   | 2024-10-16 09:36:22+00     |         2 | D02-IN    | 2024-10-16 09:36:37+00     | 
+ D02-IN:0007873  |  1121215 |      1537 | check_in   | 2024-10-20 07:21:33.05+00  |         2 | D02-IN    | 2024-10-20 07:21:33.25+00  | 
+ D02-OUT:0007787 |  1119387 |      1836 | check_out  | 2024-10-16 09:36:35.692+00 |         2 | D02-OUT   | 2024-10-16 09:36:38.692+00 | 
+ D02-OUT:0007787 |  1121216 |      1836 | check_out  | 2024-10-20 07:21:33.4+00   |         2 | D02-OUT   | 2024-10-20 07:21:33.6+00   | 
+(10 rows)
+
+
+=== X3a: D07-IN events by local month – total vs timestamps ahead ===
+ local_month | total_events | ahead_count | pct_ahead 
+-------------+--------------+-------------+-----------
+ 2024-01     |          877 |           0 |       0.0
+ 2024-02     |          750 |           0 |       0.0
+ 2024-03     |          908 |           0 |       0.0
+ 2024-04     |          860 |           0 |       0.0
+ 2024-05     |          781 |           0 |       0.0
+ 2024-06     |          748 |         613 |      82.0
+ 2024-07     |          806 |         806 |     100.0
+ 2024-08     |          738 |         123 |      16.7
+ 2024-09     |          826 |           0 |       0.0
+ 2024-10     |         1074 |           0 |       0.0
+ 2024-11     |          842 |           0 |       0.0
+ 2024-12     |          831 |           0 |       0.0
+(12 rows)
+
+
+=== X3b: SF check-out followed by D07-IN check-in within 3 h, by month ===
+ local_month | inverted_pairs 
+-------------+----------------
+ 2024-06     |            597
+ 2024-07     |            785
+ 2024-08     |            118
+(3 rows)
+
+
+=== X4a: off-hours access events by local calendar month ===
+ local_month | off_hours_events 
+-------------+------------------
+ 2024-06     |               67
+ 2024-07     |               89
+ 2024-08     |               16
+(3 rows)
+
+
+=== X4b: off-hours access events by member type ===
+    member_type    | off_hours_events 
+-------------------+------------------
+ registered_member |              172
+(1 row)
+
+
+=== X4c: top 20 registered members by off-hours event count ===
+ member_id | off_hours_events | distinct_branches |  branches   
+-----------+------------------+-------------------+-------------
+      1719 |                7 |                 1 | Mission Bay
+      1516 |                6 |                 1 | Mission Bay
+      1819 |                5 |                 1 | Mission Bay
+      1567 |                5 |                 1 | Mission Bay
+      1414 |                4 |                 1 | Mission Bay
+      1664 |                4 |                 1 | Mission Bay
+      1799 |                4 |                 1 | Mission Bay
+      1276 |                4 |                 1 | Mission Bay
+      1563 |                4 |                 1 | Mission Bay
+      1629 |                3 |                 1 | Mission Bay
+      1095 |                3 |                 1 | Mission Bay
+      1450 |                3 |                 1 | Mission Bay
+      1054 |                3 |                 1 | Mission Bay
+      1436 |                3 |                 1 | Mission Bay
+      1635 |                3 |                 1 | Mission Bay
+      1542 |                3 |                 1 | Mission Bay
+      1069 |                3 |                 1 | Mission Bay
+      1531 |                3 |                 1 | Mission Bay
+      1269 |                3 |                 1 | Mission Bay
+      1147 |                3 |                 1 | Mission Bay
+(20 rows)
+
+
+=== X5: test account events by branch, type, and off-hours ===
+ member_id |  branch_name   | event_type | total_events | off_hours_events 
+-----------+----------------+------------+--------------+------------------
+    990001 | Back Bay       | check_in   |           53 |                0
+    990001 | Back Bay       | check_out  |           53 |                0
+    990001 | Harbor Point   | check_in   |           53 |                0
+    990001 | Harbor Point   | check_out  |           53 |                0
+    990001 | Lakeshore      | check_in   |           53 |                0
+    990001 | Lakeshore      | check_out  |           53 |                0
+    990001 | Riverwalk      | check_in   |           53 |                0
+    990001 | Riverwalk      | check_out  |           53 |                0
+    990002 | Camelback      | check_in   |           53 |                0
+    990002 | Camelback      | check_out  |           53 |                0
+    990002 | Mission Bay    | check_in   |           53 |                0
+    990002 | Mission Bay    | check_out  |           53 |                0
+    990002 | Pearl District | check_in   |           35 |                0
+    990002 | Pearl District | check_out  |           35 |                0
+    990002 | Union Station  | check_in   |           53 |                0
+    990002 | Union Station  | check_out  |           53 |                0
+(16 rows)
+

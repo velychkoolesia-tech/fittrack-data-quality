@@ -1,0 +1,72 @@
+
+=== S2-corrected: double scans (first-delivery dedup) ===
+ within_1min | within_5min | within_30min | total_checkins 
+-------------+-------------+--------------+----------------
+           0 |           0 |            0 |          71899
+(1 row)
+
+
+=== S3a-corrected: check-in outcomes (first-delivery dedup) ===
+        outcome        |   n   
+-----------------------+-------
+ clean_pair            | 69508
+ long_visit_over_6h    |  1213
+ recheckin_no_checkout |  1158
+ no_subsequent_event   |    18
+ checkout_diff_branch  |     2
+(5 rows)
+
+
+=== S3b-corrected: orphan and stacked check-outs (first-delivery dedup) ===
+ orphan_first_ever | stacked_checkout | paired_diff_branch | properly_paired | total_checkouts 
+-------------------+------------------+--------------------+-----------------+-----------------
+                 6 |              278 |                  2 |           70721 |           71007
+(1 row)
+
+
+=== S4-corrected: membership state at check-in (first-delivery dedup) ===
+ membership_state_at_checkin |   n   
+-----------------------------+-------
+ membership_started          | 68096
+ membership_reactivated      |  3385
+ membership_cancelled        |   293
+ no_prior_crm_event          |   125
+(4 rows)
+
+
+=== S8-corrected: friend visits outside open visit (first-delivery dedup) ===
+ total_friend_visits | outside_open_visit 
+---------------------+--------------------
+                6875 |                 73
+(1 row)
+
+
+=== S9-corrected: off-hours event share per device (first-delivery dedup) ===
+ device_id |  branch_name   |    kind    | total_events | off_hours_events | pct_off_hours 
+-----------+----------------+------------+--------------+------------------+---------------
+ D07-IN    | Mission Bay    | entrance   |         9797 |              172 |           1.8
+ D01-IN    | Back Bay       | entrance   |         9891 |                0 |           0.0
+ D01-OUT   | Back Bay       | exit       |         9762 |                0 |           0.0
+ D02-DESK  | Harbor Point   | front_desk |          759 |                0 |           0.0
+ D02-IN    | Harbor Point   | entrance   |        10059 |                0 |           0.0
+ D02-OUT   | Harbor Point   | exit       |         9921 |                0 |           0.0
+ D03-DESK  | Lakeshore      | front_desk |         1227 |                0 |           0.0
+ D03-IN    | Lakeshore      | entrance   |        11407 |                0 |           0.0
+ D03-OUT   | Lakeshore      | exit       |        11289 |                0 |           0.0
+ D04-DESK  | Riverwalk      | front_desk |          884 |                0 |           0.0
+ D04-IN    | Riverwalk      | entrance   |         9317 |                0 |           0.0
+ D04-OUT   | Riverwalk      | exit       |         9212 |                0 |           0.0
+ D05-DESK  | Union Station  | front_desk |          977 |                0 |           0.0
+ D05-IN    | Union Station  | entrance   |         9392 |                0 |           0.0
+ D05-OUT   | Union Station  | exit       |         9286 |                0 |           0.0
+ D06-DESK  | Camelback      | front_desk |          951 |                0 |           0.0
+ D06-IN    | Camelback      | entrance   |         8732 |                0 |           0.0
+ D06-OUT   | Camelback      | exit       |         8615 |                0 |           0.0
+ D07-DESK  | Mission Bay    | front_desk |          785 |                0 |           0.0
+ D07-OUT   | Mission Bay    | exit       |         9677 |                0 |           0.0
+ D08-DESK  | Pearl District | front_desk |          383 |                0 |           0.0
+ D08-IN    | Pearl District | entrance   |         3710 |                0 |           0.0
+ D01-DESK  | Back Bay       | front_desk |          909 |                0 |           0.0
+ D08-OUT   | Pearl District | exit       |         3651 |                0 |           0.0
+(24 rows)
+
