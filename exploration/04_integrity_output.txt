@@ -1,0 +1,193 @@
+
+=== S1a: source_ref pattern inventory ===
+ ref_pattern  |   n    | distinct_refs 
+--------------+--------+---------------
+ device:<seq> | 150593 |        150593
+ crm:<n>      |   1691 |          1691
+(2 rows)
+
+
+=== S1b: source_ref prefix vs device_id mismatch ===
+ device_id | ref_prefix | n 
+-----------+------------+---
+(0 rows)
+
+
+=== S1c: sequence gaps per device ===
+ device_id | min_seq | max_seq | received | expected | gap_count 
+-----------+---------+---------+----------+----------+-----------
+ D02-OUT   |       1 |    9948 |     9921 |     9948 |        27
+ D01-IN    |       1 |    9891 |     9891 |     9891 |         0
+ D01-OUT   |       1 |    9762 |     9762 |     9762 |         0
+ D02-DESK  |       1 |     759 |      759 |      759 |         0
+ D02-IN    |       1 |   10059 |    10059 |    10059 |         0
+ D03-DESK  |       1 |    1227 |     1227 |     1227 |         0
+ D03-IN    |       1 |   11407 |    11407 |    11407 |         0
+ D03-OUT   |       1 |   11289 |    11289 |    11289 |         0
+ D04-DESK  |       1 |     884 |      884 |      884 |         0
+ D04-IN    |       1 |    9317 |     9317 |     9317 |         0
+ D04-OUT   |       1 |    9212 |     9212 |     9212 |         0
+ D05-DESK  |       1 |     977 |      977 |      977 |         0
+ D05-IN    |       1 |    9392 |     9392 |     9392 |         0
+ D05-OUT   |       1 |    9286 |     9286 |     9286 |         0
+ D06-DESK  |       1 |     951 |      951 |      951 |         0
+ D06-IN    |       1 |    8732 |     8732 |     8732 |         0
+ D06-OUT   |       1 |    8615 |     8615 |     8615 |         0
+ D07-DESK  |       1 |     785 |      785 |      785 |         0
+ D07-IN    |       1 |    9797 |     9797 |     9797 |         0
+ D07-OUT   |       1 |    9677 |     9677 |     9677 |         0
+ D08-DESK  |       1 |     383 |      383 |      383 |         0
+ D08-IN    |       1 |    3710 |     3710 |     3710 |         0
+ D01-DESK  |       1 |     909 |      909 |      909 |         0
+ D08-OUT   |       1 |    3651 |     3651 |     3651 |         0
+(24 rows)
+
+
+=== S2: double scans (rapid consecutive check-ins) ===
+ within_1min | within_5min | within_30min | total_checkins 
+-------------+-------------+--------------+----------------
+          35 |         543 |          630 |          71899
+(1 row)
+
+
+=== S3a: check-in outcomes ===
+        outcome        |   n   
+-----------------------+-------
+ clean_pair            | 69508
+ long_visit_over_6h    |  1213
+ recheckin_no_checkout |  1158
+ no_subsequent_event   |    18
+ checkout_diff_branch  |     2
+(5 rows)
+
+
+=== S3b: orphan and stacked check-outs ===
+ orphan_first_ever | stacked_checkout | paired_diff_branch | properly_paired | total_checkouts 
+-------------------+------------------+--------------------+-----------------+-----------------
+                 6 |              278 |                  2 |           70721 |           71007
+(1 row)
+
+
+=== S4: membership state at moment of each check-in ===
+ membership_state_at_checkin |   n   
+-----------------------------+-------
+ membership_started          | 68094
+ membership_reactivated      |  3385
+ membership_cancelled        |   295
+ no_prior_crm_event          |   125
+(4 rows)
+
+
+=== S5: CRM state machine transition matrix ===
+       from_state       |        to_state        |  n   
+------------------------+------------------------+------
+ (first event)          | membership_started     | 1120
+ membership_cancelled   | membership_reactivated |   56
+ membership_reactivated | membership_cancelled   |   14
+ membership_started     | membership_cancelled   |  406
+(4 rows)
+
+
+=== S6: tier history validation ===
+ from_mismatch | noop_tier_changes | changed_without_prior_tier | invalid_from_value | invalid_to_value | total_tier_changes 
+---------------+-------------------+----------------------------+--------------------+------------------+--------------------
+             3 |                 0 |                          0 |                  0 |                0 |                 95
+(1 row)
+
+
+=== S7: CRM snapshot vs event-derived state ===
+ status_snapshot_mismatch | tier_snapshot_mismatch | no_crm_state_events | no_tier_events | total_members 
+--------------------------+------------------------+---------------------+----------------+---------------
+                       49 |                      8 |                   2 |              2 |          1122
+(1 row)
+
+
+=== S8: friend visits outside any open member visit ===
+ total_friend_visits | outside_open_visit 
+---------------------+--------------------
+                6875 |                 73
+(1 row)
+
+
+=== S9: off-hours event share per device ===
+ device_id |  branch_name   |    kind    | total_events | off_hours_events | pct_off_hours 
+-----------+----------------+------------+--------------+------------------+---------------
+ D07-IN    | Mission Bay    | entrance   |         9797 |              369 |           3.8
+ D07-DESK  | Mission Bay    | front_desk |          785 |               20 |           2.5
+ D01-DESK  | Back Bay       | front_desk |          909 |               21 |           2.3
+ D08-IN    | Pearl District | entrance   |         3710 |               85 |           2.3
+ D08-OUT   | Pearl District | exit       |         3651 |               83 |           2.3
+ D02-OUT   | Harbor Point   | exit       |         9921 |              214 |           2.2
+ D06-DESK  | Camelback      | front_desk |          951 |               21 |           2.2
+ D02-DESK  | Harbor Point   | front_desk |          759 |               17 |           2.2
+ D02-IN    | Harbor Point   | entrance   |        10059 |              218 |           2.2
+ D06-IN    | Camelback      | entrance   |         8732 |              181 |           2.1
+ D01-IN    | Back Bay       | entrance   |         9891 |              203 |           2.1
+ D01-OUT   | Back Bay       | exit       |         9762 |              202 |           2.1
+ D06-OUT   | Camelback      | exit       |         8615 |              179 |           2.1
+ D03-OUT   | Lakeshore      | exit       |        11289 |              224 |           2.0
+ D07-OUT   | Mission Bay    | exit       |         9677 |              196 |           2.0
+ D03-IN    | Lakeshore      | entrance   |        11407 |              228 |           2.0
+ D05-OUT   | Union Station  | exit       |         9286 |              172 |           1.9
+ D04-OUT   | Riverwalk      | exit       |         9212 |              171 |           1.9
+ D05-IN    | Union Station  | entrance   |         9392 |              174 |           1.9
+ D04-IN    | Riverwalk      | entrance   |         9317 |              172 |           1.8
+ D03-DESK  | Lakeshore      | front_desk |         1227 |               22 |           1.8
+ D05-DESK  | Union Station  | front_desk |          977 |               17 |           1.7
+ D08-DESK  | Pearl District | front_desk |          383 |                6 |           1.6
+ D04-DESK  | Riverwalk      | front_desk |          884 |               13 |           1.5
+(24 rows)
+
+
+=== S10a: email format ===
+ null_or_empty | invalid_format | total_members 
+---------------+----------------+---------------
+             0 |              4 |          1122
+(1 row)
+
+
+=== S10b: duplicate email addresses ===
+ members_sharing_an_email | distinct_emails_with_dups 
+--------------------------+---------------------------
+                       10 |                         5
+(1 row)
+
+
+=== S10c: date-of-birth plausibility ===
+ null_dob | too_young_in_2024 | too_old_in_2024 | oldest_dob | youngest_dob | total_members 
+----------+-------------------+-----------------+------------+--------------+---------------
+        0 |                 0 |               3 | 1900-01-01 | 2007-05-17   |          1122
+(1 row)
+
+
+=== S10d: home_branch_id referential integrity ===
+ invalid_home_branch_count 
+---------------------------
+                         5
+(1 row)
+
+
+=== S10e: members.status value inventory ===
+  status   |  n  
+-----------+-----
+ active    | 772
+ cancelled | 345
+ Active    |   5
+(3 rows)
+
+
+=== S10f: members.membership_tier value inventory ===
+ membership_tier |  n  
+-----------------+-----
+ standard        | 431
+ basic           | 395
+ premium         | 296
+(3 rows)
+
+
+=== S11: joined_on vs first membership_started ===
+ total_members | no_membership_started | joined_on_mismatch | min_gap_days | max_gap_days 
+---------------+-----------------------+--------------------+--------------+--------------
+          1122 |                     2 |                  0 |              |             
+(1 row)
+
