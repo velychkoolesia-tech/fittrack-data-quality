@@ -26,39 +26,51 @@ async function main(): Promise<void> {
   let blocking = 0;
   let warnings = 0;
   let passed   = 0;
+  let explored = 0;
 
   for (const check of checks) {
     const result = await runCheck(check);
+    const line   = `[%-4s] ${result.check.id} – ${result.check.name}`;
 
-    const tag = result.passed
-      ? 'PASS'
-      : result.check.severity === 'blocking' ? 'FAIL' : 'WARN';
+    // ── exploratory: always show stats, never block ──────────────────────
+    if (result.check.kind === 'exploratory') {
+      if (result.error) {
+        console.error(`[ERR ] ${result.check.id} – ${result.check.name}\n       ERROR: ${result.error}`);
+      } else {
+        console.log(`[INFO] ${result.check.id} – ${result.check.name}`);
+        result.sample.forEach(row => console.log(`       ${JSON.stringify(row)}`));
+      }
+      explored++;
+      continue;
+    }
 
-    const line = `[${tag}] ${result.check.id} – ${result.check.name}`;
-
+    // ── all other kinds ───────────────────────────────────────────────────
     if (result.error) {
-      console.error(`${line}\n       ERROR: ${result.error}`);
-      if (result.check.severity === 'blocking') blocking++;
-      else warnings++;
+      const tag = result.check.severity === 'blocking' ? 'FAIL' : 'WARN';
+      console.error(`[${tag}] ${result.check.id} – ${result.check.name}\n       ERROR: ${result.error}`);
+      if (result.check.severity === 'blocking') blocking++; else warnings++;
       continue;
     }
 
     if (result.passed) {
-      console.log(line);
+      console.log(`[PASS] ${result.check.id} – ${result.check.name}`);
       passed++;
     } else {
+      const tag    = result.check.severity === 'blocking' ? 'FAIL' : 'WARN';
       const stream = result.check.severity === 'blocking' ? console.error : console.warn;
-      stream(`${line} (${result.rowCount} violation${result.rowCount === 1 ? '' : 's'})`);
+      stream(`[${tag}] ${result.check.id} – ${result.check.name} (${result.rowCount} violation${result.rowCount === 1 ? '' : 's'})`);
       if (result.sample.length > 0) {
         stream(`       sample: ${JSON.stringify(result.sample[0])}`);
       }
-      if (result.check.severity === 'blocking') blocking++;
-      else warnings++;
+      if (result.check.severity === 'blocking') blocking++; else warnings++;
     }
   }
 
+  const total = checks.length - explored;
   console.log(
-    `\n${checks.length} checks: ${passed} passed, ${warnings} warning${warnings === 1 ? '' : 's'}, ${blocking} blocking failure${blocking === 1 ? '' : 's'}`
+    `\n${total} checks (+ ${explored} exploratory): ` +
+    `${passed} passed, ${warnings} warning${warnings === 1 ? '' : 's'}, ` +
+    `${blocking} blocking failure${blocking === 1 ? '' : 's'}`
   );
 
   await pool.end();
