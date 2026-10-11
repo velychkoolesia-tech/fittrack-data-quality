@@ -1,0 +1,17 @@
+{
+  "name": "fittrack-dq",
+  "version": "1.0.0",
+  "description": "FitTrack data-quality test suite",
+  "scripts": {
+    "test": "ts-node tests/runner.ts"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0"
+  }
+}
