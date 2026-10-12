@@ -30,11 +30,18 @@ deduped AS (
 -- • Case-insensitive event_type: RC4 (D04-IN) sent "CHECK_IN" in
 --   uppercase during Apr 8–15 2024.  lower() absorbs that variant
 --   without hardcoding device ids or date ranges.
--- • Local year 2024: the year filter is applied at the check_in
---   timestamp converted to the branch's IANA timezone (business rule:
---   "days and months are calendar days in the time zone of the branch").
---   Filtering inside this CTE (before the window in step 3) prevents
---   out-of-scope events from distorting the pairing logic.
+-- • Local year 2024: 2024 is the report's defined reporting period
+--   (ASSIGNMENT: "members' visits in 2024"), so it is an intentional
+--   business constant — NOT a value derived from or specific to this
+--   dataset.  It stays fixed even on a different database with the same
+--   schema: the report always means "visits in 2024".  This is distinct
+--   from the forbidden dataset quirks (specific member ids, devices, or
+--   the RC2/RC4 incident date windows), which are handled by pattern.
+--   The filter is applied at the check_in timestamp converted to the
+--   branch's IANA timezone (business rule 5: "days and months are
+--   calendar days in the time zone of the branch").  Filtering inside
+--   this CTE (before the window in step 3) prevents out-of-scope events
+--   from distorting the pairing logic.
 access AS (
   SELECT
     e.member_id,
