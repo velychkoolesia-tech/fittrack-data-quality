@@ -49,6 +49,17 @@ checked the *earlier* files for the same problem. It hadn't. That produced
 within 1 min, 543 within 5 min) were **100% artifacts of the old bug** — they
 dropped to zero once the first-delivery copy was kept.
 
+**4. A check that passed for the wrong reason.**
+I asked the AI to confirm the membership test cases were covered. For "a
+cancellation with no prior start", it claimed BR01 (a check it had written)
+caught it. I made it prove that on synthetic sequences — and the row was *not*
+flagged: SQL three-valued logic makes `prev_etype IN (...)` evaluate to NULL for
+a first event, so `NOT (... OR NULL OR ...)` silently dropped it. The check was
+green only because this dataset happens to contain no such case. We fixed it
+with a NULL-safe sentinel; it now catches the orphan cancellation and still
+passes on the real data. The lesson: a green check isn't proof — I only trust
+one I've watched fail on a case it's supposed to catch.
+
 ## How I verified its output
 
 - **Ran everything** — no SQL accepted without seeing it produce output.

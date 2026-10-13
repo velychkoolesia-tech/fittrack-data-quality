@@ -24,9 +24,13 @@ export const check: Check = {
         member_id,
         lower(event_type)   AS etype,
         event_ts,
-        lag(lower(event_type)) OVER (
-          PARTITION BY member_id ORDER BY event_ts, event_id
-        )                   AS prev_etype
+        -- COALESCE the "no previous event" case to a sentinel: a bare
+        -- NULL makes prev_etype IN (...) evaluate to NULL (not FALSE)
+        -- below, which would let a first-event cancellation slip through.
+        COALESCE(
+          lag(lower(event_type)) OVER (
+            PARTITION BY member_id ORDER BY event_ts, event_id
+          ), 'none')         AS prev_etype
       FROM events
       WHERE lower(event_type) IN (
         'membership_started',
@@ -37,8 +41,9 @@ export const check: Check = {
     SELECT member_id, prev_etype AS from_state, etype AS to_state, event_ts
     FROM ordered
     WHERE NOT (
-      -- first event: only started or reactivated
-      (prev_etype IS NULL
+      -- first event (no previous): only started or reactivated.
+      -- A first-event membership_cancelled fails here and is flagged.
+      (prev_etype = 'none'
         AND etype IN ('membership_started', 'membership_reactivated'))
       -- active → cancelled
       OR (prev_etype IN ('membership_started', 'membership_reactivated')
