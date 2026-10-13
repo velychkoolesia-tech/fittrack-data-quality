@@ -134,7 +134,7 @@ sensible default, so the suite always runs with no arguments:
 | `docker-compose.yml`, `db/init/` | Postgres 17 service and seed data |
 | `src/` | the test harness (runner + db/types) |
 | `tests/` | the data-quality checks, one per file |
-| `reports/` | report queries (`visits_per_branch.sql`) |
+| `reports/` | report queries: `visits_per_branch.sql` (required) + `active_members_monthly.sql`, `friend_allowance_monthly.sql` (bonus) |
 | `exploration/` | numbered investigation SQL and their saved outputs |
 | `DATA_QUALITY.md` | findings by root cause, prioritised, with team questions and monitoring |
 | `AI_USAGE.md` | how AI was used on this task |
