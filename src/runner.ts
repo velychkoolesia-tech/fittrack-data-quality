@@ -23,47 +23,50 @@ async function runCheck(check: Check): Promise<CheckResult> {
 }
 
 async function main(): Promise<void> {
-  let blocking = 0;
-  let warnings = 0;
-  let passed   = 0;
-  let explored = 0;
+  // Run every check first, then print grouped by status so the output reads
+  // problems-first: FAIL -> WARN -> INFO -> PASS. All on stdout so the order is
+  // exactly as written (no stdout/stderr interleaving).
+  const results: CheckResult[] = [];
+  for (const check of checks) results.push(await runCheck(check));
 
-  for (const check of checks) {
-    const result = await runCheck(check);
+  const fail: string[] = [];
+  const warn: string[] = [];
+  const info: string[] = [];
+  const pass: string[] = [];
+  let blocking = 0, warnings = 0, passed = 0, explored = 0;
 
-    // ── info / exploratory: always show stats, never block ───────────────
-    if (result.check.severity === 'info') {
-      if (result.error) {
-        console.error(`[ERR ] ${result.check.id} – ${result.check.name}\n       ERROR: ${result.error}`);
-      } else {
-        console.log(`[INFO] ${result.check.id} – ${result.check.name}`);
-        result.sample.forEach(row => console.log(`       ${JSON.stringify(row)}`));
-      }
+  for (const r of results) {
+    const head = `${r.check.id} – ${r.check.name}`;
+
+    // info / exploratory: stats only, never passes or fails
+    if (r.check.severity === 'info') {
       explored++;
-      continue;
-    }
-
-    // ── blocking / warning ───────────────────────────────────────────────
-    if (result.error) {
-      const tag = result.check.severity === 'blocking' ? 'FAIL' : 'WARN';
-      console.error(`[${tag}] ${result.check.id} – ${result.check.name}\n       ERROR: ${result.error}`);
-      if (result.check.severity === 'blocking') blocking++; else warnings++;
-      continue;
-    }
-
-    if (result.passed) {
-      console.log(`[PASS] ${result.check.id} – ${result.check.name}`);
-      passed++;
-    } else {
-      const tag    = result.check.severity === 'blocking' ? 'FAIL' : 'WARN';
-      const stream = result.check.severity === 'blocking' ? console.error : console.warn;
-      stream(`[${tag}] ${result.check.id} – ${result.check.name} (${result.rowCount} violation${result.rowCount === 1 ? '' : 's'})`);
-      if (result.sample.length > 0) {
-        stream(`       sample: ${JSON.stringify(result.sample[0])}`);
+      if (r.error) {
+        info.push(`[ERR ] ${head}\n       ERROR: ${r.error}`);
+      } else {
+        info.push([`[INFO] ${head}`, ...r.sample.map(row => `       ${JSON.stringify(row)}`)].join('\n'));
       }
-      if (result.check.severity === 'blocking') blocking++; else warnings++;
+      continue;
     }
+
+    // a check errored
+    if (r.error) {
+      if (r.check.severity === 'blocking') { blocking++; fail.push(`[FAIL] ${head}\n       ERROR: ${r.error}`); }
+      else { warnings++; warn.push(`[WARN] ${head}\n       ERROR: ${r.error}`); }
+      continue;
+    }
+
+    // clean
+    if (r.passed) { passed++; pass.push(`[PASS] ${head}`); continue; }
+
+    // violations
+    const vio = `(${r.rowCount} violation${r.rowCount === 1 ? '' : 's'})`;
+    const sample = r.sample.length > 0 ? `\n       sample: ${JSON.stringify(r.sample[0])}` : '';
+    if (r.check.severity === 'blocking') { blocking++; fail.push(`[FAIL] ${head} ${vio}${sample}`); }
+    else { warnings++; warn.push(`[WARN] ${head} ${vio}${sample}`); }
   }
+
+  for (const line of [...fail, ...warn, ...info, ...pass]) console.log(line);
 
   const total = checks.length - explored;
   console.log(
