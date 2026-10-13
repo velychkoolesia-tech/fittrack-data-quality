@@ -2,7 +2,10 @@
 -- visits_per_branch.sql
 -- One row per branch: member visits in 2024 (branch-local time).
 -- Columns: branch_id, branch_name, member_visits.
--- Counting decisions are documented inline.
+-- Counting decisions are documented inline; their per-dataset impact
+-- (how many rows each decision adds or removes) is quantified in
+-- DATA_QUALITY.md, kept out of here so this query stays correct on any
+-- database with the same schema.
 -- ============================================================
 
 WITH
