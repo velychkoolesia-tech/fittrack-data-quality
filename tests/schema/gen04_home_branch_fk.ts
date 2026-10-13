@@ -17,7 +17,6 @@ export const check: Check = {
   id: 'GEN04',
   name: 'members.home_branch_id references an existing branch',
   severity: 'blocking',
-  kind: 'negative',
   sql: `
     SELECT m.member_id, m.home_branch_id
     FROM   members m

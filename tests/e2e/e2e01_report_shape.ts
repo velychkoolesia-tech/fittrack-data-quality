@@ -23,7 +23,6 @@ export const check: Check = {
   id: 'E2E01',
   name: 'visits_per_branch returns one row per branch and a non-zero total',
   severity: 'blocking',
-  kind: 'positive',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     access AS (

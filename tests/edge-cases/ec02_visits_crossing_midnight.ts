@@ -26,7 +26,6 @@ export const check: Check = {
   id: 'EC02',
   name: 'Visits crossing local midnight (check_in and check_out on different local dates)',
   severity: 'warning',
-  kind: 'edge-case',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     access AS (

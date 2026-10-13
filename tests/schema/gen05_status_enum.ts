@@ -17,7 +17,6 @@ export const check: Check = {
   id: 'GEN05',
   name: "members.status is exactly 'active' or 'cancelled' (lowercase)",
   severity: 'blocking',
-  kind: 'negative',
   sql: `
     SELECT member_id, status
     FROM   members

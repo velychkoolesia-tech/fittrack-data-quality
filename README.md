@@ -93,12 +93,13 @@ folder names is meant to be enough to see the suite's coverage at a glance:
 | `e2e/` | **End-to-end** — "e2e" means running the whole report pipeline and checking the final output, plus overall health signals. | the report returns one row per branch with a non-zero total |
 | `exploratory/` | **Stats only.** These never pass or fail; they print numbers a human can skim for anything odd. | distribution of visit durations |
 
-A check also has two attributes, independent of its folder:
+Each check returns rows **only when there's a problem**, and has a
+**`severity`** that decides how a violation is treated at runtime:
 
-- **`kind`** — how it behaves at runtime: `negative` (rows returned = violations,
-  the default) · `positive` (rows returned = an expected-good condition is
-  missing) · `edge-case` · `exploratory` (stats only, never blocks).
-- **`severity`** — `blocking` (fails the run) or `warning` (reported only).
+- **`blocking`** — a violation fails the run (exit code 1).
+- **`warning`** — a violation is reported but doesn't affect the exit code.
+- **`info`** — never passes or fails; the query returns a stats summary that is
+  printed as `[INFO]` (the exploratory checks).
 
 ### Adding a check
 
@@ -110,8 +111,7 @@ A check also has two attributes, independent of its folder:
    export const check: Check = {
      id: 'GEN07',
      name: 'Short human-readable description',
-     severity: 'warning',        // 'blocking' | 'warning'
-     kind: 'negative',           // optional; defaults to 'negative'
+     severity: 'warning',        // 'blocking' | 'warning' | 'info'
      sql: `SELECT … WHERE <violating condition>`,   // rows returned = a problem
      // params: [ … ]            // optional, bound as $1, $2, …
    };

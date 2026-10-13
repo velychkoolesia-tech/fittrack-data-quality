@@ -24,7 +24,6 @@ export const check: Check = {
   id: 'POS01',
   name: 'Clean visit pair rate is at least 90 %',
   severity: 'warning',
-  kind: 'positive',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     access AS (

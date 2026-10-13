@@ -21,7 +21,6 @@ export const check: Check = {
   id: 'E2E02',
   name: 'First membership_cancelled is always after first membership_started',
   severity: 'warning',
-  kind: 'positive',
   sql: `
     WITH first_start AS (
       SELECT DISTINCT ON (member_id)

@@ -19,7 +19,6 @@ export const check: Check = {
   id: 'RC04',
   name: 'CRM source_refs are unique (no CRM event delivered twice)',
   severity: 'warning',
-  kind: 'negative',
   sql: `
     SELECT source_ref, count(*) AS occurrences
     FROM   events

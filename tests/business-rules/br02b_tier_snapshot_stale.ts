@@ -19,7 +19,6 @@ export const check: Check = {
   id: 'BR02b',
   name: 'members.membership_tier snapshot agrees with event-derived tier',
   severity: 'warning',
-  kind: 'negative',
   sql: `
     WITH latest_tier AS (
       SELECT DISTINCT ON (member_id)

@@ -25,7 +25,6 @@ export const check: Check = {
   id: 'E2E03',
   name: `visits_per_branch total is between ${minVisits.toLocaleString()} and ${maxVisits.toLocaleString()}`,
   severity: 'warning',
-  kind: 'positive',
   params: [minVisits, maxVisits],
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),

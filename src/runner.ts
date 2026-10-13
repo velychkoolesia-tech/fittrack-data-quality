@@ -31,8 +31,8 @@ async function main(): Promise<void> {
   for (const check of checks) {
     const result = await runCheck(check);
 
-    // ── exploratory: always show stats, never block ──────────────────────
-    if (result.check.kind === 'exploratory') {
+    // ── info / exploratory: always show stats, never block ───────────────
+    if (result.check.severity === 'info') {
       if (result.error) {
         console.error(`[ERR ] ${result.check.id} – ${result.check.name}\n       ERROR: ${result.error}`);
       } else {
@@ -43,7 +43,7 @@ async function main(): Promise<void> {
       continue;
     }
 
-    // ── all other kinds ───────────────────────────────────────────────────
+    // ── blocking / warning ───────────────────────────────────────────────
     if (result.error) {
       const tag = result.check.severity === 'blocking' ? 'FAIL' : 'WARN';
       console.error(`[${tag}] ${result.check.id} – ${result.check.name}\n       ERROR: ${result.error}`);

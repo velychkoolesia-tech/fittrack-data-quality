@@ -18,8 +18,7 @@ import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 export const check: Check = {
   id: 'EXP02',
   name: 'Top 10 members by check-ins in a single local calendar month',
-  severity: 'warning',
-  kind: 'exploratory',
+  severity: 'info',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     monthly AS (

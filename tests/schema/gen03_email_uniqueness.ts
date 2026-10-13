@@ -17,7 +17,6 @@ export const check: Check = {
   id: 'GEN03',
   name: 'No two members share the same email address',
   severity: 'blocking',
-  kind: 'negative',
   sql: `
     SELECT email, count(*) AS member_count, array_agg(member_id ORDER BY member_id) AS member_ids
     FROM   members

@@ -18,7 +18,6 @@ export const check: Check = {
   id: 'GEN01',
   name: 'Critical fields are not null',
   severity: 'blocking',
-  kind: 'negative',
   sql: `
     SELECT field, null_count
     FROM (

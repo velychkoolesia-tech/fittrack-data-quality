@@ -21,7 +21,6 @@ export const check: Check = {
   id: 'RC02',
   name: 'No device sends event timestamps more than 5 minutes ahead of ingestion',
   severity: 'blocking',
-  kind: 'negative',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY})
     SELECT

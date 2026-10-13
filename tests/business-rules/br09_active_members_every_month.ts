@@ -24,7 +24,6 @@ export const check: Check = {
   id: 'BR09',
   name: `Every month in the dataset has at least ${minActivePerMonth} active members`,
   severity: 'warning',
-  kind: 'positive',
   params: [minActivePerMonth],
   sql: `
     WITH month_series AS (

@@ -21,7 +21,6 @@ export const check: Check = {
   id: 'EC04',
   name: 'All complete visit pairs have strictly positive duration (check_out after check_in)',
   severity: 'blocking',
-  kind: 'edge-case',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     access AS (

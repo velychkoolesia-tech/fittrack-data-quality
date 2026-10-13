@@ -15,7 +15,6 @@ export const check: Check = {
   id: 'GEN02',
   name: 'All member email addresses are well-formed',
   severity: 'warning',
-  kind: 'negative',
   sql: `
     SELECT member_id, email
     FROM   members

@@ -18,7 +18,6 @@ export const check: Check = {
   id: 'RC01',
   name: 'No missing sequence numbers in any device source_ref stream',
   severity: 'blocking',
-  kind: 'negative',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     seqs AS (

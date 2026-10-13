@@ -21,7 +21,6 @@ export const check: Check = {
   id: 'EC03',
   name: 'No registered member has check-outs but zero check-ins',
   severity: 'warning',
-  kind: 'edge-case',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY})
     SELECT DISTINCT e.member_id

@@ -21,7 +21,6 @@ export const check: Check = {
   id: 'EC01',
   name: 'Events at exactly branch opening time are classified as within hours',
   severity: 'blocking',
-  kind: 'edge-case',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY})
     SELECT e.event_id, e.event_type, e.event_ts, b.name AS branch_name

@@ -19,7 +19,6 @@ export const check: Check = {
   id: 'RC03',
   name: 'No CRM event is ingested more than 7 days after its event timestamp',
   severity: 'warning',
-  kind: 'negative',
   sql: `
     SELECT
       lower(event_type)             AS event_type,

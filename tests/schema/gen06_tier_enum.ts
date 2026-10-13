@@ -16,7 +16,6 @@ export const check: Check = {
   id: 'GEN06',
   name: "members.membership_tier is exactly 'basic', 'standard', or 'premium'",
   severity: 'blocking',
-  kind: 'negative',
   sql: `
     SELECT member_id, membership_tier
     FROM   members

@@ -18,7 +18,6 @@ export const check: Check = {
   id: 'POS02',
   name: 'Every branch has at least one registered-member check-in',
   severity: 'warning',
-  kind: 'positive',
   sql: `
     SELECT b.branch_id, b.name, b.city
     FROM branches b
