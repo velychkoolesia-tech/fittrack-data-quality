@@ -235,6 +235,33 @@ Warning, not blocking: policy gaps, and some overage may be granted on purpose.
 
 ---
 
+## Impact on the bonus reports
+
+Both bonus reports are event-derived (they read the event stream, not the
+`members` snapshot), so the snapshot-drift issues (RC12) do not affect them.
+The ones that do:
+
+**`active_members_monthly`** (active members per month)
+- **RC5 (late cancellations)** — the report keys off `event_ts`, so the final
+  numbers are correct; but a run *during* the up-to-32-day ingestion lag would
+  not yet see recent cancellations and would overcount actives for the latest
+  month or two.
+- **RC6 (no CRM history)** — members 1031 and 1132 are active in the snapshot
+  but have no membership events, so they are never counted here (undercount of
+  up to 2). By rule 2 this is correct: state comes from events.
+- **RC9 (duplicate identities)** — a re-joined member holding two member_ids
+  with separate histories is counted as two actives (overcount of up to ~5, the
+  live halves of the re-join pairs).
+
+**`friend_allowance_monthly`** (average friend-allowance utilisation)
+- **RC1 (duplicates)** — duplicate `friend_visit` deliveries would inflate the
+  numerator; handled by de-duplicating first delivery.
+- **RC11 (allowance not enforced)** — the 71 over-allowance member-months do
+  *not* distort the average: the report caps friend visits at the allowance by
+  definition, so per-member utilisation never exceeds 100 %.
+- **RC2 (SF clock shift)** — a check-in or friend visit near a month boundary at
+  San Francisco in Jun–Aug could land in the wrong month; small.
+
 ## Questions for the CRM team
 
 1. **Cancellations (RC5):** why up to 32 days late — nightly/weekly batch? Can
