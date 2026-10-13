@@ -40,7 +40,7 @@ Every finding maps to a check in `tests/`, so it is re-tested on every run.
 the test run. Five blocking checks fail on *this* dataset on purpose — the suite
 is a gate and stays red until the data is fixed; it passes on a clean database
 with the same schema. *warning* = surfaced and counted, but doesn't fail the run.
-Current result: **30 checks (+3 exploratory): 17 passed, 8 warnings, 5 blocking
+Current result: **31 checks (+3 exploratory): 18 passed, 8 warnings, 5 blocking
 failures.**
 
 ---

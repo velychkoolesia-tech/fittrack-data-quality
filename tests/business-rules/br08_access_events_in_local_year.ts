@@ -1,4 +1,5 @@
 import type { Check } from '../../src/lib/types';
+import { DEDUPED_FIRST_DELIVERY } from '../../src/lib/sql';
 
 // -- ============================================================
 // -- CHECK: BR08 – access events fall in the expected local year
@@ -23,11 +24,7 @@ export const check: Check = {
   severity: 'warning',
   params: [expectedYear],
   sql: `
-    WITH deduped AS (
-      SELECT DISTINCT ON (source_ref) *
-      FROM events
-      ORDER BY source_ref, ingested_at ASC, event_id ASC
-    )
+    WITH deduped AS (${DEDUPED_FIRST_DELIVERY})
     SELECT
       e.event_id,
       e.event_type,

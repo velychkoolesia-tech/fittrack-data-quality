@@ -1,4 +1,5 @@
 import type { Check } from '../../src/lib/types';
+import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 
 // -- ============================================================
 // -- CHECK: EC03 – registered members with check-outs but no check-ins
@@ -22,15 +23,11 @@ export const check: Check = {
   severity: 'warning',
   kind: 'edge-case',
   sql: `
-    WITH deduped AS (
-      SELECT DISTINCT ON (source_ref) *
-      FROM events
-      ORDER BY source_ref, ingested_at ASC, event_id ASC
-    )
+    WITH deduped AS (${DEDUPED_FIRST_DELIVERY})
     SELECT DISTINCT e.member_id
     FROM deduped e
     WHERE lower(e.event_type) = 'check_out'
-      AND e.member_id IN (SELECT member_id FROM members)
+      AND ${REGISTERED_MEMBER}
       AND NOT EXISTS (
         SELECT 1 FROM deduped ci
         WHERE ci.member_id = e.member_id

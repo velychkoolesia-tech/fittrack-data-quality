@@ -1,4 +1,5 @@
 import type { Check } from '../../src/lib/types';
+import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 
 // -- ============================================================
 // -- CHECK: EC04 – no complete visit pair has zero or negative duration
@@ -22,16 +23,12 @@ export const check: Check = {
   severity: 'blocking',
   kind: 'edge-case',
   sql: `
-    WITH deduped AS (
-      SELECT DISTINCT ON (source_ref) *
-      FROM   events
-      ORDER  BY source_ref, ingested_at ASC, event_id ASC
-    ),
+    WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     access AS (
       SELECT member_id, event_id, lower(event_type) AS etype, event_ts, branch_id
       FROM   deduped
       WHERE  lower(event_type) IN ('check_in', 'check_out')
-        AND  member_id IN (SELECT member_id FROM members)
+        AND  ${REGISTERED_MEMBER}
     ),
     with_next AS (
       SELECT

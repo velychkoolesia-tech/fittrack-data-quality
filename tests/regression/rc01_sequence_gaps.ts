@@ -1,4 +1,5 @@
 import type { Check } from '../../src/lib/types';
+import { DEDUPED_FIRST_DELIVERY } from '../../src/lib/sql';
 
 // -- ============================================================
 // -- CHECK: RC01 – no missing sequence numbers in device source_refs
@@ -19,11 +20,7 @@ export const check: Check = {
   severity: 'blocking',
   kind: 'negative',
   sql: `
-    WITH deduped AS (
-      SELECT DISTINCT ON (source_ref) *
-      FROM   events
-      ORDER  BY source_ref, ingested_at ASC, event_id ASC
-    ),
+    WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     seqs AS (
       SELECT
         device_id,

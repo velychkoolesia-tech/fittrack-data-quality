@@ -1,4 +1,5 @@
 import type { Check } from '../../src/lib/types';
+import { DEDUPED_FIRST_DELIVERY } from '../../src/lib/sql';
 
 // -- ============================================================
 // -- CHECK: EC01 – events at exactly branch opening time are within hours
@@ -22,11 +23,7 @@ export const check: Check = {
   severity: 'blocking',
   kind: 'edge-case',
   sql: `
-    WITH deduped AS (
-      SELECT DISTINCT ON (source_ref) *
-      FROM events
-      ORDER BY source_ref, ingested_at ASC, event_id ASC
-    )
+    WITH deduped AS (${DEDUPED_FIRST_DELIVERY})
     SELECT e.event_id, e.event_type, e.event_ts, b.name AS branch_name
     FROM deduped e
     JOIN branches b ON b.branch_id = e.branch_id

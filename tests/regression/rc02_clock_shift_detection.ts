@@ -1,4 +1,5 @@
 import type { Check } from '../../src/lib/types';
+import { DEDUPED_FIRST_DELIVERY } from '../../src/lib/sql';
 
 // -- ============================================================
 // -- CHECK: RC02 – no device sends events ahead of ingestion time
@@ -22,11 +23,7 @@ export const check: Check = {
   severity: 'blocking',
   kind: 'negative',
   sql: `
-    WITH deduped AS (
-      SELECT DISTINCT ON (source_ref) *
-      FROM   events
-      ORDER  BY source_ref, ingested_at ASC, event_id ASC
-    )
+    WITH deduped AS (${DEDUPED_FIRST_DELIVERY})
     SELECT
       device_id,
       count(*)                              AS events_ahead,

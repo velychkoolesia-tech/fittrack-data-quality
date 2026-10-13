@@ -1,4 +1,5 @@
 import type { Check } from '../../src/lib/types';
+import { REGISTERED_MEMBER } from '../../src/lib/sql';
 
 // -- ============================================================
 // -- CHECK: POS02 – every branch has at least one check-in event
@@ -26,7 +27,7 @@ export const check: Check = {
       FROM events e
       WHERE e.branch_id = b.branch_id
         AND lower(e.event_type) = 'check_in'
-        AND e.member_id IN (SELECT member_id FROM members)
+        AND ${REGISTERED_MEMBER}
     )
     ORDER BY b.branch_id
   `,

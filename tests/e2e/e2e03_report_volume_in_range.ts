@@ -1,4 +1,5 @@
 import type { Check } from '../../src/lib/types';
+import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 
 // -- ============================================================
 // -- CHECK: E2E03 – visits_per_branch total is in a plausible band
@@ -27,18 +28,14 @@ export const check: Check = {
   kind: 'positive',
   params: [minVisits, maxVisits],
   sql: `
-    WITH deduped AS (
-      SELECT DISTINCT ON (source_ref) *
-      FROM   events
-      ORDER  BY source_ref, ingested_at ASC, event_id ASC
-    ),
+    WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     access AS (
       SELECT e.member_id, e.event_id, lower(e.event_type) AS etype,
              e.event_ts, e.branch_id
       FROM   deduped e
       JOIN   branches b ON b.branch_id = e.branch_id
       WHERE  lower(e.event_type) IN ('check_in', 'check_out')
-        AND  e.member_id IN (SELECT member_id FROM members)
+        AND  ${REGISTERED_MEMBER}
         AND  extract(year FROM e.event_ts AT TIME ZONE b.timezone) = 2024
     ),
     with_next AS (

@@ -1,4 +1,5 @@
 import type { Check } from '../../src/lib/types';
+import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 
 // -- ============================================================
 // -- CHECK: BR06 – every friend_visit occurs inside an open member visit
@@ -19,16 +20,12 @@ export const check: Check = {
   name: 'Every friend_visit occurs during an open member visit',
   severity: 'warning',
   sql: `
-    WITH deduped AS (
-      SELECT DISTINCT ON (source_ref) *
-      FROM events
-      ORDER BY source_ref, ingested_at ASC, event_id ASC
-    ),
+    WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     fv AS (
       SELECT member_id, event_ts, branch_id, event_id
       FROM deduped
       WHERE lower(event_type) = 'friend_visit'
-        AND member_id IN (SELECT member_id FROM members)
+        AND ${REGISTERED_MEMBER}
     )
     SELECT
       fv.member_id,

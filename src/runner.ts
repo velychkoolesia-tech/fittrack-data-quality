@@ -30,7 +30,6 @@ async function main(): Promise<void> {
 
   for (const check of checks) {
     const result = await runCheck(check);
-    const line   = `[%-4s] ${result.check.id} – ${result.check.name}`;
 
     // ── exploratory: always show stats, never block ──────────────────────
     if (result.check.kind === 'exploratory') {

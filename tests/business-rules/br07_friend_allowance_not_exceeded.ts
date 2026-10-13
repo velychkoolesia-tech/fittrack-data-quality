@@ -1,4 +1,5 @@
 import type { Check } from '../../src/lib/types';
+import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 
 // -- ============================================================
 // -- CHECK: BR07 – monthly friend visits do not exceed tier allowance
@@ -22,11 +23,7 @@ export const check: Check = {
   name: 'Monthly friend visits do not exceed tier allowance (basic 2 / standard 3 / premium 8)',
   severity: 'warning',
   sql: `
-    WITH deduped AS (
-      SELECT DISTINCT ON (source_ref) *
-      FROM events
-      ORDER BY source_ref, ingested_at ASC, event_id ASC
-    ),
+    WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     -- Label each friend_visit with the local calendar month at its branch,
     -- and compute the UTC start of the following month for tier lookup.
     fv_labeled AS (
@@ -41,7 +38,7 @@ export const check: Check = {
       FROM deduped e
       JOIN branches b ON b.branch_id = e.branch_id
       WHERE lower(e.event_type) = 'friend_visit'
-        AND e.member_id IN (SELECT member_id FROM members)
+        AND ${REGISTERED_MEMBER}
     ),
     -- Aggregate visits per member per local month; pick the earliest
     -- next_month_utc across branches (safe approximation: timezone offsets

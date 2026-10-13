@@ -1,4 +1,5 @@
 import type { Check } from '../../src/lib/types';
+import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 
 // -- ============================================================
 // -- CHECK: EXP02 – members with unusually high monthly visit counts
@@ -20,11 +21,7 @@ export const check: Check = {
   severity: 'warning',
   kind: 'exploratory',
   sql: `
-    WITH deduped AS (
-      SELECT DISTINCT ON (source_ref) *
-      FROM events
-      ORDER BY source_ref, ingested_at ASC, event_id ASC
-    ),
+    WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),
     monthly AS (
       SELECT
         e.member_id,
@@ -33,7 +30,7 @@ export const check: Check = {
       FROM deduped e
       JOIN branches b ON b.branch_id = e.branch_id
       WHERE lower(e.event_type) = 'check_in'
-        AND e.member_id IN (SELECT member_id FROM members)
+        AND ${REGISTERED_MEMBER}
       GROUP BY e.member_id, local_month
     )
     SELECT member_id, local_month, checkin_count

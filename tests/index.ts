@@ -9,6 +9,7 @@ import { check as gen03 } from './schema/gen03_email_uniqueness';
 import { check as gen04 } from './schema/gen04_home_branch_fk';
 import { check as gen05 } from './schema/gen05_status_enum';
 import { check as gen06 } from './schema/gen06_tier_enum';
+import { check as gen07 } from './schema/gen07_event_type_domain';
 
 // ── Business-rule checks ──────────────────────────────────────────────────
 import { check as br01 } from './business-rules/br01_membership_invalid_transitions';
@@ -49,7 +50,7 @@ import { check as exp03 } from './exploratory/exp03_branch_monthly_anomaly';
 
 export const checks: Check[] = [
   // schema / contract
-  gen01, gen02, gen03, gen04, gen05, gen06,
+  gen01, gen02, gen03, gen04, gen05, gen06, gen07,
   // business-rule
   br01, br02, br02b, br03, br04, br05, br06, br07, br08, br09,
   // regression guards
