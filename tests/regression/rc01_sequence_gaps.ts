@@ -1,4 +1,4 @@
-import type { Check } from '../src/lib/types';
+import type { Check } from '../../src/lib/types';
 
 // -- ============================================================
 // -- CHECK: RC01 – no missing sequence numbers in device source_refs

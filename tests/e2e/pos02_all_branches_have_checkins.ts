@@ -1,4 +1,4 @@
-import type { Check } from '../src/lib/types';
+import type { Check } from '../../src/lib/types';
 
 // -- ============================================================
 // -- CHECK: POS02 – every branch has at least one check-in event

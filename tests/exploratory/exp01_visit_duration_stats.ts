@@ -1,4 +1,4 @@
-import type { Check } from '../src/lib/types';
+import type { Check } from '../../src/lib/types';
 
 // -- ============================================================
 // -- CHECK: EXP01 – visit duration distribution (exploratory)

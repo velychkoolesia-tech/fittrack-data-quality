@@ -1,4 +1,4 @@
-import type { Check } from '../src/lib/types';
+import type { Check } from '../../src/lib/types';
 
 // -- ============================================================
 // -- CHECK: GEN02 – member email addresses are well-formed

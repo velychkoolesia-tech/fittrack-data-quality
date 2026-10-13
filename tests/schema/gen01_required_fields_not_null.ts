@@ -1,4 +1,4 @@
-import type { Check } from '../src/lib/types';
+import type { Check } from '../../src/lib/types';
 
 // -- ============================================================
 // -- CHECK: GEN01 – critical fields must never be null

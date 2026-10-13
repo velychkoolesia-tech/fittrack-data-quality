@@ -1,4 +1,4 @@
-import type { Check } from '../src/lib/types';
+import type { Check } from '../../src/lib/types';
 
 // -- ============================================================
 // -- CHECK: POS01 – at least 90 % of check-ins are clean pairs
@@ -12,13 +12,17 @@ import type { Check } from '../src/lib/types';
 // --   stopped sending check-outs) rather than a data quality edge
 // --   case.
 // -- EXPECTED: 0 rows (clean-pair rate ≥ 90 %).
-// -- SEVERITY IF IT FAILS: blocking
+// -- SEVERITY IF IT FAILS: warning.  The 90 % threshold is a judgement
+// --   tuned to this dataset, so a different database with the same
+// --   schema could legitimately sit below it without anything being
+// --   broken.  Reported as a warning so a volume/mix difference does
+// --   not produce a false *blocking* failure on another database.
 // -- ============================================================
 
 export const check: Check = {
   id: 'POS01',
   name: 'Clean visit pair rate is at least 90 %',
-  severity: 'blocking',
+  severity: 'warning',
   kind: 'positive',
   sql: `
     WITH deduped AS (

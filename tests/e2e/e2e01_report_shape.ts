@@ -1,30 +1,28 @@
-import type { Check } from '../src/lib/types';
+import type { Check } from '../../src/lib/types';
 
 // -- ============================================================
-// -- CHECK: E2E01 – visits_per_branch total is within expected range
-// -- WHAT I'M TESTING: I am running the full visits_per_branch
-// --   report logic inline and verifying that the total visit count
-// --   across all branches falls between $1 (min) and $2 (max).
-// --   On this dataset the answer is 70,721.  Default bounds are
-// --   50,000–200,000; tune them for the expected population.
-// --   Also verifies the report returns exactly one row per branch.
-// -- WHY: A corrupt data load could produce totals of 0 (no events
-// --   ingested), a few hundred (only test data), or millions
-// --   (dedup failed).  A range check on the final report output
-// --   catches all of these with a single blocking assertion.
-// -- EXPECTED: 0 rows (total within range and branch count correct).
+// -- CHECK: E2E01 – visits_per_branch has the right shape
+// -- WHAT I'M TESTING: I am running the full visits_per_branch report
+// --   logic inline and verifying its *structure* holds on any
+// --   database: it returns exactly one row per branch, and the total
+// --   visit count is greater than zero.
+// -- WHY: This is the schema-portable, always-true half of an
+// --   end-to-end report check.  A load that ingested nothing (total
+// --   = 0) or a report that dropped/duplicated branches is broken on
+// --   ANY database and must stop the run.  The dataset-specific
+// --   volume band (is the number plausibly ~70k?) is intentionally
+// --   NOT here — it lives in E2E03 as a warning, because a different
+// --   database with the same schema can hold a legitimately different
+// --   number of visits without anything being wrong.
+// -- EXPECTED: 0 rows (one row per branch and a non-zero total).
 // -- SEVERITY IF IT FAILS: blocking
 // -- ============================================================
 
-const minVisits    = parseInt(process.env.MIN_TOTAL_VISITS    ?? '50000',  10);
-const maxVisits    = parseInt(process.env.MAX_TOTAL_VISITS    ?? '200000', 10);
-
 export const check: Check = {
   id: 'E2E01',
-  name: `visits_per_branch total is between ${minVisits.toLocaleString()} and ${maxVisits.toLocaleString()}, one row per branch`,
+  name: 'visits_per_branch returns one row per branch and a non-zero total',
   severity: 'blocking',
   kind: 'positive',
-  params: [minVisits, maxVisits],
   sql: `
     WITH deduped AS (
       SELECT DISTINCT ON (source_ref) *
@@ -66,8 +64,8 @@ export const check: Check = {
     )
     SELECT branch_count, total_visits, expected_branches
     FROM   summary
-    WHERE  branch_count != expected_branches
-        OR total_visits  < $1
-        OR total_visits  > $2
+    WHERE  branch_count  != expected_branches
+        OR total_visits  IS NULL
+        OR total_visits   = 0
   `,
 };

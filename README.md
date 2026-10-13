@@ -91,28 +91,34 @@ decision is documented in comments inside each `.sql` file.
 ## Test-suite layout and how to add a check
 
 ```
-src/                   # the harness that runs the checks
-  runner.ts            # runs every registered check, prints results, sets exit code
+src/                     # the harness that runs the checks
+  runner.ts              # runs every registered check, prints results, sets exit code
   lib/
-    db.ts              # pg connection pool from PG* env vars
-    types.ts           # Check / CheckResult types
-tests/                 # the data-quality checks (the deliverable)
-  index.ts             # the registry: every check is imported and listed here
-  <id>_<name>.ts       # one check per file
+    db.ts                # pg connection pool from PG* env vars
+    types.ts             # Check / CheckResult types
+tests/                   # the data-quality checks (the deliverable)
+  index.ts               # the registry: every check is imported and listed here
+  schema/                # schema/contract checks (nulls, enums, FKs, uniqueness)
+  business-rules/        # the five business rules and their consequences
+  edge-cases/            # boundaries (opening/closing time, midnight, durations)
+  regression/            # guards for the documented root causes (RC1–RC8)
+  e2e/                   # end-to-end report checks + positive health checks
+  exploratory/           # stats-only, never pass/fail
 ```
 
-A check is a small object. `severity` is `blocking` or `warning`; `kind` is
+Checks are grouped into folders by **category** (what they cover). That is a
+different axis from a check's `kind` (how it behaves at runtime): `kind` is
 `negative` (rows = violations, the default), `positive` (rows = an expected-good
-condition is missing), `edge-case`, or `exploratory` (stats only, never blocks).
-Each file opens with a header comment stating what it tests, why, the expected
-result, and the severity.
+condition is missing), `edge-case`, or `exploratory` (stats only, never blocks);
+`severity` is `blocking` or `warning`. Each file opens with a header comment
+stating what it tests, why, the expected result, and the severity.
 
 **To add a check:**
 
-1. Create `tests/<id>_<short_name>.ts` exporting a `check: Check`:
+1. Create `tests/<category>/<id>_<short_name>.ts` exporting a `check: Check`:
 
    ```ts
-   import type { Check } from '../src/lib/types';
+   import type { Check } from '../../src/lib/types';
 
    export const check: Check = {
      id: 'GEN07',
@@ -124,7 +130,8 @@ result, and the severity.
    };
    ```
 
-2. Import it in `tests/index.ts` and add it to the `checks` array.
+2. Import it in `tests/index.ts` (e.g. `./schema/gen07_…`) and add it to the
+   `checks` array.
 3. `npm test`.
 
 Checks that take an input (e.g. a threshold or the reporting year) read it from
