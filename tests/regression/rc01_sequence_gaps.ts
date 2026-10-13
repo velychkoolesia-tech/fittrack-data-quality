@@ -16,7 +16,7 @@ import { DEDUPED_FIRST_DELIVERY } from '../../src/lib/sql';
 
 export const check: Check = {
   id: 'RC01',
-  name: 'No missing sequence numbers in any device source_ref stream',
+  name: "Every device's source_ref sequence is gap-free",
   severity: 'blocking',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),

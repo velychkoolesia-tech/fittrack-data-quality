@@ -15,7 +15,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'BR05',
-  name: 'Event branch_id matches the recording device branch_id',
+  name: "Every event's branch matches its recording device's branch",
   severity: 'blocking',
   sql: `
     SELECT

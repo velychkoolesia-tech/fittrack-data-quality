@@ -15,7 +15,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'BR02',
-  name: 'members.status snapshot agrees with event-derived state',
+  name: "Every member's status matches the state derived from events",
   severity: 'warning',
   sql: `
     WITH latest_state AS (

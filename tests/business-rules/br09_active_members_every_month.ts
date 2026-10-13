@@ -22,7 +22,7 @@ const minActivePerMonth = parseInt(process.env.MIN_ACTIVE_PER_MONTH ?? '100', 10
 
 export const check: Check = {
   id: 'BR09',
-  name: `Every month in the dataset has at least ${minActivePerMonth} active members`,
+  name: `Every month has at least ${minActivePerMonth} active members`,
   severity: 'warning',
   params: [minActivePerMonth],
   sql: `

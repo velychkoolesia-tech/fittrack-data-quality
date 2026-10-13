@@ -19,7 +19,7 @@ import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 
 export const check: Check = {
   id: 'EXP03',
-  name: 'Branch monthly check-in counts vs branch average (bottom 20)',
+  name: "Branch-months furthest below the branch's own average",
   severity: 'info',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),

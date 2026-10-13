@@ -17,7 +17,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'RC03',
-  name: 'No CRM event is ingested more than 7 days after its event timestamp',
+  name: 'Every CRM event is ingested within 7 days of occurring',
   severity: 'warning',
   sql: `
     SELECT

@@ -17,7 +17,7 @@ import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 
 export const check: Check = {
   id: 'BR06',
-  name: 'Every friend_visit occurs during an open member visit',
+  name: 'Every friend visit happens while the member is checked in',
   severity: 'warning',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),

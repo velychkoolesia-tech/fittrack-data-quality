@@ -16,7 +16,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'BR04',
-  name: 'Device kind matches the event type it recorded',
+  name: "Every event's device kind matches its event type",
   severity: 'blocking',
   sql: `
     SELECT e.event_id, e.event_type, e.device_id, d.kind

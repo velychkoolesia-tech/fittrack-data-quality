@@ -21,7 +21,7 @@ import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 
 export const check: Check = {
   id: 'E2E01',
-  name: 'visits_per_branch returns one row per branch and a non-zero total',
+  name: 'visits_per_branch returns one row per branch with a non-zero total',
   severity: 'blocking',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),

@@ -24,7 +24,7 @@ import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 
 export const check: Check = {
   id: 'EC02',
-  name: 'Visits crossing local midnight (check_in and check_out on different local dates)',
+  name: 'Every midnight-crossing visit lasts at most 6 hours',
   severity: 'warning',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),

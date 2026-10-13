@@ -18,7 +18,7 @@ import { DEDUPED_FIRST_DELIVERY } from '../../src/lib/sql';
 
 export const check: Check = {
   id: 'EC05',
-  name: 'Events at exactly branch closing time are classified as within hours',
+  name: 'An event at exactly closing time counts as within hours',
   severity: 'blocking',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY})

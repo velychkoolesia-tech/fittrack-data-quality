@@ -17,7 +17,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'BR02b',
-  name: 'members.membership_tier snapshot agrees with event-derived tier',
+  name: "Every member's tier matches the tier derived from events",
   severity: 'warning',
   sql: `
     WITH latest_tier AS (

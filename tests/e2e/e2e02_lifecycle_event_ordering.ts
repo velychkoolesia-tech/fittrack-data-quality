@@ -19,7 +19,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'E2E02',
-  name: 'First membership_cancelled is always after first membership_started',
+  name: "Every member's first cancellation comes after their first start",
   severity: 'warning',
   sql: `
     WITH first_start AS (

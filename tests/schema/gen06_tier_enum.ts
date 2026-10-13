@@ -14,7 +14,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'GEN06',
-  name: "members.membership_tier is exactly 'basic', 'standard', or 'premium'",
+  name: "Every membership tier is 'basic', 'standard', or 'premium'",
   severity: 'blocking',
   sql: `
     SELECT member_id, membership_tier

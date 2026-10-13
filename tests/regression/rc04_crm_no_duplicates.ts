@@ -17,7 +17,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'RC04',
-  name: 'CRM source_refs are unique (no CRM event delivered twice)',
+  name: 'Every CRM source_ref appears exactly once',
   severity: 'warning',
   sql: `
     SELECT source_ref, count(*) AS occurrences

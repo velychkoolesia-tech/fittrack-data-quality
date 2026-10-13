@@ -16,7 +16,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'GEN01',
-  name: 'Critical fields are not null',
+  name: 'Every required event and member field is populated',
   severity: 'blocking',
   sql: `
     SELECT field, null_count

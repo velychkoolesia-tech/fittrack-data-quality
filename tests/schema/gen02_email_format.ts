@@ -13,7 +13,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'GEN02',
-  name: 'All member email addresses are well-formed',
+  name: 'Every member email is well-formed',
   severity: 'warning',
   sql: `
     SELECT member_id, email

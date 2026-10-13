@@ -23,7 +23,7 @@ const maxVisits = parseInt(process.env.MAX_TOTAL_VISITS ?? '200000', 10);
 
 export const check: Check = {
   id: 'E2E03',
-  name: `visits_per_branch total is between ${minVisits.toLocaleString()} and ${maxVisits.toLocaleString()}`,
+  name: `visits_per_branch total stays within the expected ${minVisits.toLocaleString()}–${maxVisits.toLocaleString()} range`,
   severity: 'warning',
   params: [minVisits, maxVisits],
   sql: `

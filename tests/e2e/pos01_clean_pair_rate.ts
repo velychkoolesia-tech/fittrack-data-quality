@@ -22,7 +22,7 @@ import { DEDUPED_FIRST_DELIVERY, REGISTERED_MEMBER } from '../../src/lib/sql';
 
 export const check: Check = {
   id: 'POS01',
-  name: 'Clean visit pair rate is at least 90 %',
+  name: 'At least 90% of check-ins pair cleanly with a same-branch check-out',
   severity: 'warning',
   sql: `
     WITH deduped AS (${DEDUPED_FIRST_DELIVERY}),

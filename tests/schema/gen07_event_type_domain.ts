@@ -20,7 +20,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'GEN07',
-  name: 'events.event_type is one of the seven known types',
+  name: 'Every event_type is one of the seven known types',
   severity: 'blocking',
   sql: `
     SELECT lower(event_type) AS unknown_type, count(*) AS rows

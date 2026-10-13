@@ -16,7 +16,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'BR01',
-  name: 'No invalid CRM membership state-machine transitions',
+  name: "Every member's membership events follow a valid lifecycle",
   severity: 'blocking',
   sql: `
     WITH ordered AS (

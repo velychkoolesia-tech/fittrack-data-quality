@@ -15,7 +15,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'GEN04',
-  name: 'members.home_branch_id references an existing branch',
+  name: "Every member's home branch references a real branch",
   severity: 'blocking',
   sql: `
     SELECT m.member_id, m.home_branch_id

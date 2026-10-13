@@ -15,7 +15,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'GEN05',
-  name: "members.status is exactly 'active' or 'cancelled' (lowercase)",
+  name: "Every member status is exactly 'active' or 'cancelled'",
   severity: 'blocking',
   sql: `
     SELECT member_id, status

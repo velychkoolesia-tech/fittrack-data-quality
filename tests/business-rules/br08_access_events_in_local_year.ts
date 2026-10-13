@@ -20,7 +20,7 @@ const expectedYear = parseInt(process.env.CHECK_YEAR ?? '2024', 10);
 
 export const check: Check = {
   id: 'BR08',
-  name: `All access events fall in local calendar year ${expectedYear}`,
+  name: `Every access event falls in local calendar year ${expectedYear}`,
   severity: 'warning',
   params: [expectedYear],
   sql: `

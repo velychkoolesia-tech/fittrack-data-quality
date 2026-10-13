@@ -16,7 +16,7 @@ import type { Check } from '../../src/lib/types';
 
 export const check: Check = {
   id: 'BR03',
-  name: 'Active members each have at least one CRM membership event',
+  name: 'Every active member has at least one membership event',
   severity: 'warning',
   sql: `
     SELECT m.member_id, m.status, m.joined_on
