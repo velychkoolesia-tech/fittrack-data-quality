@@ -1,47 +1,31 @@
 -- ============================================================
--- FILE: visits_per_branch.sql
--- GOAL: Count member visits per branch in calendar year 2024
---       (local time at each branch).
---       Returns one row per branch: branch_id, branch_name,
---       member_visits.
--- CONTEXT: Produced after data-quality investigation in
---       exploration/01–06.  Every counting decision is documented
---       inline below.
+-- visits_per_branch.sql
+-- One row per branch: member visits in 2024 (branch-local time).
+-- Columns: branch_id, branch_name, member_visits.
+-- Counting decisions are documented inline.
 -- ============================================================
 
 WITH
 
--- ── 1. DEDUPLICATION ────────────────────────────────────────────────────
--- At-least-once delivery from access devices produces duplicate
--- source_refs (RC1: 3,756 extra rows across all 24 devices).
--- Keep the FIRST-ingested copy: exploration/05 X2 showed that
--- re-delivered copies have event_ts set to the batch re-delivery
--- time rather than the original event time.
+-- 1. De-duplicate. Devices deliver each event more than once (RC1).
+--    Keep the first delivery: a re-delivered copy carries the batch
+--    re-delivery time in event_ts, not the original scan time.
 deduped AS (
   SELECT DISTINCT ON (source_ref) *
   FROM   events
   ORDER  BY source_ref, ingested_at ASC, event_id ASC
 ),
 
--- ── 2. SCOPE: registered members, access events, local year 2024 ────────
--- • Registered members only: member_ids absent from the members table
---   are test/service accounts (RC3).  They are excluded from visit
---   counts because they have no memberships and are not real members.
--- • Case-insensitive event_type: RC4 (D04-IN) sent "CHECK_IN" in
---   uppercase during Apr 8–15 2024.  lower() absorbs that variant
---   without hardcoding device ids or date ranges.
--- • Local year 2024: 2024 is the report's defined reporting period
---   (ASSIGNMENT: "members' visits in 2024"), so it is an intentional
---   business constant — NOT a value derived from or specific to this
---   dataset.  It stays fixed even on a different database with the same
---   schema: the report always means "visits in 2024".  This is distinct
---   from the forbidden dataset quirks (specific member ids, devices, or
---   the RC2/RC4 incident date windows), which are handled by pattern.
---   The filter is applied at the check_in timestamp converted to the
---   branch's IANA timezone (business rule 5: "days and months are
---   calendar days in the time zone of the branch").  Filtering inside
---   this CTE (before the window in step 3) prevents out-of-scope events
---   from distorting the pairing logic.
+-- 2. Scope: registered members, access events, local year 2024.
+--    - Registered members only: ids not in `members` are test/service
+--      cards (RC3), not real members.
+--    - lower(event_type): absorbs the uppercase "CHECK_IN" bug (RC4) by
+--      pattern, without naming any device or date.
+--    - 2024 is the report's fixed reporting period (ASSIGNMENT: "visits
+--      in 2024") — a business constant, not a dataset quirk, so it holds
+--      on any database with the same schema. Judged in the branch's
+--      timezone (rule 5). Filtering here, before pairing, keeps
+--      out-of-scope events from breaking the pairs.
 access AS (
   SELECT
     e.member_id,
@@ -56,10 +40,9 @@ access AS (
     AND  extract(year FROM e.event_ts AT TIME ZONE b.timezone) = 2024
 ),
 
--- ── 3. PAIRING: look at what immediately follows each event ─────────────
--- The window is PARTITION BY member_id (not by branch) because a
--- member can only be in one place at a time.  The very next access
--- event for the member is the natural close of their current action.
+-- 3. Pair each event with the member's next one. Partition by member
+--    (a member is in one place at a time); their next access event is
+--    the natural close of the current one.
 with_next AS (
   SELECT
     member_id,
@@ -74,29 +57,14 @@ with_next AS (
   FROM access
 ),
 
--- ── 4. VISIT DEFINITION ─────────────────────────────────────────────────
--- Business rule: "a visit starts with a check_in at a branch's
--- entrance and ends with a check_out at the same branch's exit."
---
--- INCLUDED:
---   ✓ Complete pairs only: check_in whose immediately next event is
---     a check_out at the same branch.
---   ✓ Cancelled-member visits (293): RC5 means CRM cancellations
---     arrived up to 32 days late; the access-control system had no
---     knowledge of the cancellation at the time and granted entry.
---     The visit physically occurred.
---   ✓ Members 1031/1132 (RC6, no CRM history): valid rows in the
---     members table with verified access events.  The CRM gap is a
---     separate defect to fix.
---   ✓ Visits longer than 6 h (1,213 pairs): duration does not affect
---     whether a visit happened; it is counted as 1 visit.
---
--- EXCLUDED:
---   ✗ Unpaired check-ins (1,158 recheckins + 18 with no subsequent
---     event): the data does not prove these visits completed.
---     Counting them would mix "confirmed" with "possible" visits.
---   ✗ Cross-branch pairs (next check_out at a different branch, 2
---     cases): pairing is ambiguous; treated as unverifiable.
+-- 4. A visit = a check_in whose next event is a check_out at the same
+--    branch (rule 3).
+--    Included: cancelled members (RC5 — entry was granted, the visit
+--      happened), members with no CRM history (RC6), and visits over 6h
+--      (duration doesn't change that a visit occurred).
+--    Excluded: unpaired check-ins (re-entries or lost check-outs — not
+--      proven complete) and pairs that close at a different branch
+--      (ambiguous).
 visits AS (
   SELECT branch_id
   FROM   with_next
@@ -105,10 +73,8 @@ visits AS (
     AND  next_branch = branch_id
 )
 
--- ── 5. AGGREGATE ────────────────────────────────────────────────────────
--- LEFT JOIN ensures every branch appears in the result even if it
--- recorded zero qualifying visits (e.g. a branch that opened mid-year
--- might have no visits on a different database with sparse data).
+-- 5. Count per branch. LEFT JOIN so every branch appears, even with
+--    zero visits (e.g. a branch that opened mid-year).
 SELECT
   b.branch_id,
   b.name              AS branch_name,
