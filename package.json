@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "FitTrack data-quality test suite",
   "scripts": {
-    "test": "ts-node tests/runner.ts"
+    "test": "ts-node src/runner.ts"
   },
   "dependencies": {
     "pg": "^8.13.0"

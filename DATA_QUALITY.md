@@ -15,7 +15,7 @@ warning but is top priority, because the report is wrong without handling it.
   delivery** (`DISTINCT ON (source_ref) ... ORDER BY source_ref, ingested_at`).
 - Local time = `event_ts AT TIME ZONE branches.timezone`.
 
-Every finding maps to a check in `tests/checks/`, so it is re-tested on every run.
+Every finding maps to a check in `tests/`, so it is re-tested on every run.
 
 ---
 
