@@ -39,11 +39,13 @@ PGHOST=… PGPORT=… PGDATABASE=… PGUSER=… PGPASSWORD=… npm test
 | Tag | Meaning |
 | --- | --- |
 | `[PASS]` | clean — 0 violating rows |
-| `[WARN]` | a **warning** check found rows; reported, does **not** fail the run |
-| `[FAIL]` | a **blocking** check found rows (or errored); **fails the run** |
+| `[WARN]` | a **warning** check found rows; reported only — **does not affect the exit code** |
+| `[FAIL]` | a **blocking** check found rows (or errored); the run still finishes, but the **final exit code is 1** |
 | `[INFO]` | an **exploratory** check; prints stats, never passes or fails |
 
-The run prints a summary and exits `1` if there was any blocking failure, else `0`.
+Every check always runs to completion — "FAIL" refers to the **exit code**, not to
+stopping early. The run executes all checks, prints a summary, and exits `1` if any
+blocking check had violations, else `0`.
 
 > **On this dataset, 5 blocking checks fail on purpose** (clock shift, lost events,
 > duplicate member identities, a corrupt import batch). The suite is a gate and

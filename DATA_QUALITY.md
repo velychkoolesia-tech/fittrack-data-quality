@@ -1,9 +1,10 @@
 # FitTrack data-quality findings
 
-I found **12 issues** across two systems: the access-control devices and the
-CRM. This page lists them worst-first, shows the query that proves each one,
-explains the single root cause behind it, and ends with the questions I'd ask
-each team and what I'd monitor from now on.
+I found **12 issues** across two systems (the access-control devices and the
+CRM), plus **one open, mostly-unexplained anomaly** (an 892 check-in/check-out
+imbalance). This page shows the query that proves each one, explains the root
+cause where I can establish it, and ends with the questions I'd ask each team
+and what I'd monitor from now on.
 
 **How I prioritised:** (1) does it corrupt the required `visits_per_branch`
 report, (2) is the check blocking or a warning, (3) how many rows or members are
@@ -84,8 +85,8 @@ silently distorts both counts and durations for one branch.
 
 `source_ref` is `<device_id>:<sequence>`. D02-OUT's sequence runs 1 → 9,948 but
 only 9,921 values arrived: **27 check-outs were generated and never ingested.**
-This is the main driver of the long-standing "~890 more check-ins than
-check-outs" gap — lost exits leave visits that never close.
+Lost exits leave visits that never close. These 27 are a *small part* of the
+892 check-in/check-out imbalance below — not its main cause (see the open item).
 
 ```sql
 WITH deduped AS (SELECT DISTINCT ON (source_ref) * FROM events
@@ -97,6 +98,30 @@ GROUP BY device_id HAVING (max(seq)-min(seq)+1)-count(*) > 0;   -- D02-OUT: 27
 ```
 **Impact:** up to 27 real branch-2 visits can't be paired. Blocking — silent
 under-counting we can't recover from the data.
+
+### ⚠️ Open — 892 unpaired check-ins, mostly unexplained
+no single root cause · flagged for the access-control team
+
+Among registered members in 2024 there are **71,899 check-ins but only 71,007
+check-outs — 892 more check-ins than check-outs**, and the gap shows up on every
+branch. RC8 (lost D02-OUT exits) accounts for only **27** of them (3%). The
+remaining ~865 are **not yet explained**: members leaving without their exit
+being recorded (held doors / tailgating), other devices silently dropping exits,
+or genuinely never-closed sessions.
+
+```sql
+WITH deduped AS (SELECT DISTINCT ON (source_ref) * FROM events
+                 ORDER BY source_ref, ingested_at, event_id)
+SELECT count(*) FILTER (WHERE lower(event_type)='check_in')  AS checkins,   -- 71,899
+       count(*) FILTER (WHERE lower(event_type)='check_out') AS checkouts   -- 71,007
+FROM   deduped WHERE member_id IN (SELECT member_id FROM members);          -- gap = 892
+```
+**Impact:** the visit report is **robust** to this — it counts only clean
+check_in→check_out pairs, so an unpaired check-in is simply not a visit. But the
+imbalance is a real data-quality signal; I'd raise it with the access team and
+track the per-branch check-in−check-out gap over time (see monitoring). I am
+deliberately not attributing it to a single cause, because the evidence doesn't
+support one.
 
 ### 🟡 RC4 — Austin entrance sent `CHECK_IN` in uppercase
 case-insensitive matching in every check · warning · 181 rows, 2024-04-08 → 15
@@ -125,8 +150,21 @@ SELECT member_id, lower(event_type), count(*)
 FROM   events WHERE member_id NOT IN (SELECT member_id FROM members)
 GROUP  BY 1,2;                   -- 990001, 990002: 828 events
 ```
-**Impact (measured):** they would add **269 phantom visit-pairs**. The report
-counts registered members only, so the 70,721 total already excludes them.
+**Impact (measured):** if counted they would add **269 phantom visit-pairs**.
+The report counts registered members only, so the 70,721 total already excludes
+them. Proof:
+
+```sql
+WITH deduped AS (SELECT DISTINCT ON (source_ref) * FROM events
+                 ORDER BY source_ref, ingested_at, event_id),
+acc AS (SELECT member_id, lower(event_type) etype, event_ts, branch_id, event_id
+        FROM deduped WHERE lower(event_type) IN ('check_in','check_out')
+          AND member_id NOT IN (SELECT member_id FROM members)),
+wn AS (SELECT branch_id, etype,
+         lead(lower(etype)) OVER w ne, lead(branch_id) OVER w nb
+       FROM acc WINDOW w AS (PARTITION BY member_id ORDER BY event_ts, event_id))
+SELECT count(*) FROM wn WHERE etype='check_in' AND ne='check_out' AND nb=branch_id;  -- 269
+```
 
 ---
 
@@ -178,8 +216,29 @@ SELECT count(*) FILTER (WHERE ingested_at - event_ts > interval '7 days'),
 FROM   events WHERE lower(event_type) = 'membership_cancelled';   -- 344, 32 days
 ```
 **Impact:** for up to a month the access system treats cancelled members as
-active (they can still check in). Counting their visits is a deliberate report
-decision — see `visits_per_branch.sql`.
+active (they can still check in). **290 of the 70,721 counted visits are by
+members already cancelled (event-derived) at check-in** — kept on purpose, the
+visit physically happened (a deliberate report decision; see
+`visits_per_branch.sql`).
+
+```sql
+WITH deduped AS (SELECT DISTINCT ON (source_ref) * FROM events
+                 ORDER BY source_ref, ingested_at, event_id),
+mem AS (SELECT member_id, lower(event_type) etype, event_ts, event_id FROM deduped
+        WHERE lower(event_type) IN ('membership_started','membership_reactivated','membership_cancelled')),
+acc AS (SELECT e.member_id, lower(e.event_type) etype, e.event_ts, e.branch_id, e.event_id
+        FROM deduped e JOIN branches b USING (branch_id)
+        WHERE lower(e.event_type) IN ('check_in','check_out')
+          AND e.member_id IN (SELECT member_id FROM members)
+          AND extract(year FROM e.event_ts AT TIME ZONE b.timezone)=2024),
+wn AS (SELECT member_id, branch_id, event_ts ci_ts, etype,
+         lead(lower(etype)) OVER w ne, lead(branch_id) OVER w nb
+       FROM acc WINDOW w AS (PARTITION BY member_id ORDER BY event_ts, event_id)),
+visits AS (SELECT member_id, ci_ts FROM wn WHERE etype='check_in' AND ne='check_out' AND nb=branch_id)
+SELECT count(*) FROM visits v WHERE (        -- member's state as of the check-in
+  SELECT m.etype FROM mem m WHERE m.member_id=v.member_id AND m.event_ts<=v.ci_ts
+  ORDER BY m.event_ts DESC, m.event_id DESC LIMIT 1) = 'membership_cancelled';  -- 290
+```
 
 ### 🟠 RC12 — The `members` snapshot drifts from the events
 `br02` (status, 49) + `br02b` (tier, 8) · warning
@@ -225,9 +284,23 @@ their check-in was lost, RC8), and 71 member-months over the cap (basic 2 /
 standard 3 / premium 8).
 
 ```sql
--- allowance breach (see br07 for the full check)
-SELECT member_id, local_month, tier, friend_visits, allowance
-FROM   ... WHERE friend_visits > allowance;     -- 71 member-months
+-- Friend visits per member per local month, over the member's tier cap.
+-- (Snapshot tier used here for a compact, runnable query -> 85 member-months.
+--  The authoritative check br07 uses the tier AS OF each month and finds 71;
+--  the 85 vs 71 difference is itself tier drift, RC12.)
+WITH deduped AS (SELECT DISTINCT ON (source_ref) * FROM events
+                 ORDER BY source_ref, ingested_at, event_id),
+fv AS (SELECT e.member_id,
+              to_char(e.event_ts AT TIME ZONE b.timezone,'YYYY-MM') AS local_month,
+              count(*) AS friend_visits
+       FROM deduped e JOIN branches b USING (branch_id)
+       WHERE lower(e.event_type)='friend_visit'
+         AND e.member_id IN (SELECT member_id FROM members)
+       GROUP BY 1,2)
+SELECT count(*) AS member_months_over_cap
+FROM   fv JOIN members m USING (member_id)
+WHERE  fv.friend_visits > CASE lower(m.membership_tier)
+         WHEN 'basic' THEN 2 WHEN 'standard' THEN 3 WHEN 'premium' THEN 8 ELSE 0 END;  -- 85
 ```
 **Impact:** `visits_per_branch` counts member pairs only, so this doesn't change
 it — but any guest/allowance report is unreliable until the rule is enforced.
