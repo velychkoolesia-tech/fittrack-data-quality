@@ -1,121 +1,106 @@
 # FitTrack data-quality
 
-A data-quality review of FitTrack's gym data (one Postgres database written by
-two systems — a CRM and the access-control turnstiles). This repo contains:
+A data-quality review of FitTrack's gym data — one Postgres database written by
+two systems (a CRM and the access-control turnstiles). The repo holds a one-command
+**test suite**, the required **report query**, the **findings** (`DATA_QUALITY.md`),
+and the **investigation trail** (`exploration/`).
 
-- a **test suite** that checks the data against the business rules and the
-  issues found during investigation (`tests/`);
-- the required **report query** and layout for bonus reports (`reports/`);
-- the **investigation trail** (`exploration/`) and the **findings write-up**
-  (`DATA_QUALITY.md`).
+## Run it
 
-## Prerequisites
-
-- **Docker Desktop** (for the Postgres 17 container), running.
-- **Node.js 18+** and npm (for the TypeScript test suite).
-
-## Quick start
+Needs **Docker Desktop** (running) and **Node.js 18+**.
 
 ```bash
-# 1. Start Postgres 17 and load the data (seeds from db/init on first run)
-docker compose up -d --wait
-
-# 2. Install the test-suite dependencies
-npm install
-
-# 3. Run the test suite
-npm test
+docker compose up -d --wait   # start Postgres 17 and load the data (first run only)
+npm install                   # install the suite's dependencies
+npm test                      # run every check
 ```
 
-That's the whole loop. `npm test` connects to the database, runs every check,
-prints one line per check, and exits non-zero if any **blocking** check fails.
+`npm test` connects to the database, runs every check, prints one line each, and
+**exits non-zero if any blocking check fails** — so it works as a CI gate on every
+new load.
 
-## Database connection (environment variables)
+## Running against a different database
 
-The suite reads the standard Postgres environment variables, so it can be
-pointed at **any** database with the same schema:
+The suite reads the standard Postgres environment variables, so it points at any
+database with the same schema:
 
-| Variable     | Default (local Docker) |
-| ------------ | ---------------------- |
-| `PGHOST`     | `localhost`            |
-| `PGPORT`     | `5432`                 |
-| `PGDATABASE` | `fittrack`             |
-| `PGUSER`     | `fittrack`             |
-| `PGPASSWORD` | `fittrack`             |
-
-Against a different database:
+| Variable | `PGHOST` | `PGPORT` | `PGDATABASE` | `PGUSER` | `PGPASSWORD` |
+| --- | --- | --- | --- | --- | --- |
+| Default | `localhost` | `5432` | `fittrack` | `fittrack` | `fittrack` |
 
 ```bash
-PGHOST=... PGPORT=... PGDATABASE=... PGUSER=... PGPASSWORD=... npm test
+PGHOST=… PGPORT=… PGDATABASE=… PGUSER=… PGPASSWORD=… npm test
 ```
 
-The Docker container itself uses the same `fittrack`/`fittrack` credentials; set
-`FITTRACK_DB_PORT` before `docker compose up` if port 5432 is already taken.
+(If port 5432 is taken, set `FITTRACK_DB_PORT` before `docker compose up`.)
 
-## Reading the output
+## What you'll see
 
-Each check prints one line:
+| Tag | Meaning |
+| --- | --- |
+| `[PASS]` | clean — 0 violating rows |
+| `[WARN]` | a **warning** check found rows; reported, does **not** fail the run |
+| `[FAIL]` | a **blocking** check found rows (or errored); **fails the run** |
+| `[INFO]` | an **exploratory** check; prints stats, never passes or fails |
 
-| Tag      | Meaning |
-| -------- | ------- |
-| `[PASS]` | check is clean (0 violating rows) |
-| `[WARN]` | a **warning** check found rows — reported, does **not** fail the run |
-| `[FAIL]` | a **blocking** check found rows (or errored) — **fails the run** |
-| `[INFO]` | an **exploratory** check — prints sample stats, never passes/fails |
+The run prints a summary and exits `1` if there was any blocking failure, else `0`.
 
-The run ends with a summary and exits `1` if there was any blocking failure,
-`0` otherwise. This makes it usable as a pipeline gate.
+> **On this dataset, 5 blocking checks fail on purpose** (clock shift, lost events,
+> duplicate member identities, a corrupt import batch). The suite is a gate and
+> stays red until those are fixed; on a clean database with the same schema it
+> passes. Details in `DATA_QUALITY.md`.
 
-> **Note on this dataset:** five blocking checks fail on the shipped data *on
-> purpose* (clock shift, lost events, duplicate member identities, a corrupt
-> import batch). The suite is a gate and stays red until those are fixed; on a
-> clean database with the same schema it passes. See `DATA_QUALITY.md`.
+## Running the reports
 
-## Running the report queries
-
-Each report is a single standalone query, run read-only with `psql -f`:
+Each report is one standalone query, run read-only. It touches only the source
+tables (`events`, `branches`, `members`) — no views, functions, or temp tables —
+so it runs as-is on any database with the same schema. Counting decisions are
+documented in comments inside each `.sql`.
 
 ```bash
-# via the Docker container
 docker compose exec -T db psql -U fittrack -d fittrack -f - < reports/visits_per_branch.sql
-
-# or against any database with the same schema (uses the PG* vars above)
+# or, against any database using the PG* vars above:
 psql -f reports/visits_per_branch.sql
 ```
 
-Report queries depend only on the source tables (`events`, `branches`,
-`members`) — no views, functions, or temp tables — so they run as-is on a fresh
-copy of this database or a different one with the same schema. Every counting
-decision is documented in comments inside each `.sql` file.
-
-## Test-suite layout and how to add a check
+## The checks
 
 ```
-src/                     # the harness that runs the checks
-  runner.ts              # runs every registered check, prints results, sets exit code
-  lib/
-    db.ts                # pg connection pool from PG* env vars
-    types.ts             # Check / CheckResult types
-tests/                   # the data-quality checks (the deliverable)
-  index.ts               # the registry: every check is imported and listed here
-  schema/                # schema/contract checks (nulls, enums, FKs, uniqueness)
-  business-rules/        # the five business rules and their consequences
-  edge-cases/            # boundaries (opening/closing time, midnight, durations)
-  regression/            # guards for the documented root causes (RC1–RC8)
-  e2e/                   # end-to-end report checks + positive health checks
-  exploratory/           # stats-only, never pass/fail
+src/                 # harness
+  runner.ts          #   runs every registered check, prints results, sets the exit code
+  lib/               #   db connection (PG* vars) + Check types
+tests/               # the checks (the deliverable)
+  index.ts           #   the registry — every check is imported and listed here
+  schema/            #   ┐
+  business-rules/    #   │ one folder per category
+  edge-cases/        #   │ (explained below)
+  regression/        #   │
+  e2e/               #   │
+  exploratory/       #   ┘
 ```
 
-Checks are grouped into folders by **category** (what they cover). That is a
-different axis from a check's `kind` (how it behaves at runtime): `kind` is
-`negative` (rows = violations, the default), `positive` (rows = an expected-good
-condition is missing), `edge-case`, or `exploratory` (stats only, never blocks);
-`severity` is `blocking` or `warning`. Each file opens with a header comment
-stating what it tests, why, the expected result, and the severity.
+Checks live in one folder per **category** — what the check is about. Reading the
+folder names is meant to be enough to see the suite's coverage at a glance:
 
-**To add a check:**
+| Folder | What it means | Example |
+| --- | --- | --- |
+| `schema/` | **Contract checks.** Is the data even the right shape? Nulls in required fields, unknown enum values, broken foreign keys, duplicate IDs. | every member's status is `active` or `cancelled` |
+| `business-rules/` | **The five rules from the assignment** (membership state, active-in-month, visits, friend allowance, local time) and their knock-on effects. | monthly friend visits don't exceed the tier allowance |
+| `edge-cases/` | **Boundaries** where logic tends to break. | an event exactly at closing time counts as inside opening hours |
+| `regression/` | **Guards for the specific bugs I found** (the root causes in `DATA_QUALITY.md`), so they can't come back unnoticed. | no device sends timestamps ahead of ingestion (the clock-shift bug) |
+| `e2e/` | **End-to-end** — "e2e" means running the whole report pipeline and checking the final output, plus overall health signals. | the report returns one row per branch with a non-zero total |
+| `exploratory/` | **Stats only.** These never pass or fail; they print numbers a human can skim for anything odd. | distribution of visit durations |
 
-1. Create `tests/<category>/<id>_<short_name>.ts` exporting a `check: Check`:
+A check also has two attributes, independent of its folder:
+
+- **`kind`** — how it behaves at runtime: `negative` (rows returned = violations,
+  the default) · `positive` (rows returned = an expected-good condition is
+  missing) · `edge-case` · `exploratory` (stats only, never blocks).
+- **`severity`** — `blocking` (fails the run) or `warning` (reported only).
+
+### Adding a check
+
+1. Create `tests/<category>/<id>_<short_name>.ts`:
 
    ```ts
    import type { Check } from '../../src/lib/types';
@@ -123,32 +108,37 @@ stating what it tests, why, the expected result, and the severity.
    export const check: Check = {
      id: 'GEN07',
      name: 'Short human-readable description',
-     severity: 'warning',          // 'blocking' | 'warning'
-     kind: 'negative',             // optional; defaults to 'negative'
-     sql: `SELECT ... WHERE <violating condition>`,  // rows returned = problem
-     // params: [ ... ]            // optional, bound as $1, $2, ...
+     severity: 'warning',        // 'blocking' | 'warning'
+     kind: 'negative',           // optional; defaults to 'negative'
+     sql: `SELECT … WHERE <violating condition>`,   // rows returned = a problem
+     // params: [ … ]            // optional, bound as $1, $2, …
    };
    ```
 
-2. Import it in `tests/index.ts` (e.g. `./schema/gen07_…`) and add it to the
-   `checks` array.
+2. Import it in `tests/index.ts` and add it to the `checks` array.
 3. `npm test`.
 
-Checks that take an input (e.g. a threshold or the reporting year) read it from
-an environment variable with a sensible default, so the suite still runs with no
-arguments — for example `MIN_ACTIVE_PER_MONTH`, `CHECK_YEAR`.
+Checks that need a tunable input read it from an environment variable with a
+sensible default, so the suite always runs with no arguments:
 
-## Repository layout
+| Variable | Default | Used by |
+| --- | --- | --- |
+| `CHECK_YEAR` | `2024` | access-events-in-year check |
+| `MIN_ACTIVE_PER_MONTH` | `100` | active-members-per-month check |
+| `MIN_TOTAL_VISITS` / `MAX_TOTAL_VISITS` | `50000` / `200000` | report volume check |
 
-| Path                | What it is |
-| ------------------- | ---------- |
+## Repository map
+
+| Path | What it is |
+| --- | --- |
 | `docker-compose.yml`, `db/init/` | Postgres 17 service and seed data |
-| `src/`              | the test harness (runner + db/types) |
-| `tests/`            | the data-quality checks (one per file, one command to run) |
-| `reports/`          | report queries (`visits_per_branch.sql` + bonus) |
-| `exploration/`      | numbered investigation SQL and their saved outputs |
-| `DATA_QUALITY.md`   | findings by root cause, prioritised, with team questions and monitoring |
-| `ASSIGNMENT.md`     | the original task |
+| `src/` | the test harness (runner + db/types) |
+| `tests/` | the data-quality checks, one per file |
+| `reports/` | report queries (`visits_per_branch.sql`) |
+| `exploration/` | numbered investigation SQL and their saved outputs |
+| `DATA_QUALITY.md` | findings by root cause, prioritised, with team questions and monitoring |
+| `AI_USAGE.md` | how AI was used on this task |
+| `ASSIGNMENT.md` | the original task |
 
 ## Time spent
 
